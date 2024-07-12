@@ -237,16 +237,26 @@ class SeededGridSearchCV(GridSearchCV):
                 super().fit(X=X, y=y, groups=groups, **fit_params)
 
                 # Show warnings / errors (outside catcher)
+                warning_count_string = f"Got {len(w)} warnings ({len(set(w))} unique)."
+
+                warning_messages = []
+                if len(w) > 0:
+                    # Collect warning messages
+                    warning_messages = [str(warn.message) for warn in w]
+
+            # Message warnings
+            # NOTE: Cannot do this within the warning catcher as
+            # it seems to become a recursive catch/warn/catch/warn/...
+            # and blows up the memory
+            self.messenger(
+                warning_count_string,
+                add_msg_fn=warnings.warn,
+            )
+            for msg in warning_messages:
                 self.messenger(
-                    f"\nGot {len(w)} warnings ({len(set(w))} unique).",
+                    msg,
                     add_msg_fn=warnings.warn,
                 )
-                if w:
-                    for warn in w:
-                        self.messenger(
-                            warn.message,
-                            add_msg_fn=warnings.warn,
-                        )
 
         # TODO Perhaps handle if there's no best_estimator_?
         # Surely it will just fail downstream?

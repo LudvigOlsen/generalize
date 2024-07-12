@@ -10,7 +10,7 @@ from sklearn.linear_model import LogisticRegression
 from generalize.model.full_model import train_full_model
 
 
-# TODO: Doesn't work - regression doesn't seem to work currently
+# # TODO: Doesn't work - regression doesn't seem to work currently
 def test_train_full_model_deterministic(tmp_path):
     x_lo = np.zeros(shape=(30, 5), dtype=np.float32)
     x_lo[:, 4] = np.arange(30) / 1000
@@ -173,213 +173,6 @@ def test_train_full_model_multiclass_classification(
     print(model_out)
 
     raise
-
-    # # Testing small subset of results
-    # # as evaluate() is (TODO) tested elsewhere
-
-    # # Testing summarized results
-    # print(cv_out["Evaluation"]["Summary"])
-    # assert (
-    #     cv_out["Evaluation"]["Summary"]["What"]
-    #     == "Summary of 2 evaluations from multiclass classification."
-    # )
-    # assert (
-    #     np.round(cv_out["Evaluation"]["Summary"]["Scores"]["Accuracy"], decimals=5)
-    #     == np.round(pd.Series([0.96, 0.0000, 0.96, 0.96, 0.000000]), decimals=5)
-    # ).all()
-    # assert (
-    #     np.round(cv_out["Evaluation"]["Summary"]["Scores"]["Macro AUC"], decimals=5)
-    #     == np.round(
-    #         pd.Series([0.994196, 0.002994, 0.992079, 0.996313, 0.000000]), decimals=5
-    #     )
-    # ).all()
-
-    # # Total (summed) confusion matrix
-    # # Sums to 2 x num_samples == 100
-
-    # # print(cv_out["Evaluation"]["Summary"]["Confusion Matrix"])
-    # np.testing.assert_equal(
-    #     cv_out["Evaluation"]["Summary"]["Confusion Matrix"].get_counts(),
-    #     np.array([[34, 2, 0], [1, 20, 1], [0, 2, 40]]),
-    # )
-    # assert (
-    #     np.sum(cv_out["Evaluation"]["Summary"]["Confusion Matrix"].get_counts())
-    #     == 2 * num_samples
-    # )
-
-    # # Testing repetition evaluations
-    # print(cv_out["Evaluation"]["Evaluations"])
-    # assert cv_out["Evaluation"]["Evaluations"]["What"] == "Combined evaluations."
-    # assert (
-    #     len(cv_out["Evaluation"]["Evaluations"]["Scores"]) == 2
-    # ), "Number of evaluations does not match number of repetitions."
-
-    # # print(cv_out["Evaluation"]["Evaluations"]['Confusion Matrices'])
-    # expected_conf_mats = {
-    #     "Repetition": {
-    #         "0": [[17, 1, 0], [0, 10, 1], [0, 1, 20]],
-    #         "1": [[17, 1, 0], [1, 10, 0], [0, 1, 20]],
-    #     }
-    # }
-    # for rep in range(2):
-    #     np.testing.assert_equal(
-    #         cv_out["Evaluation"]["Evaluations"]["Confusion Matrices"].get(
-    #             f"Repetition.{rep}"
-    #         ),
-    #         expected_conf_mats["Repetition"][str(rep)],
-    #     )
-
-    # assert (
-    #     cv_out["Evaluation"]["Evaluations"]["One-vs-All"]["Class"]
-    #     == pd.Series([0, 1, 2, 0, 1, 2])
-    # ).all()
-    # print(cv_out["Evaluation"]["Evaluations"]["One-vs-All"]["TN"])
-    # assert (
-    #     cv_out["Evaluation"]["Evaluations"]["One-vs-All"]["TN"]
-    #     == pd.Series([32, 37, 28, 31, 37, 29])
-    # ).all()
-    # assert (
-    #     np.round(
-    #         cv_out["Evaluation"]["Evaluations"]["One-vs-All"]["Balanced Accuracy"],
-    #         decimals=5,
-    #     )
-    #     == np.round(
-    #         pd.Series([0.972222, 0.928904, 0.958949, 0.956597, 0.928904, 0.976190]),
-    #         decimals=5,
-    #     )
-    # ).all()
-
-    # # Testing repetition predictions
-    # print(cv_out["Outer Predictions"])
-    # assert (
-    #     len(cv_out["Outer Predictions"]) == 2
-    # ), "Number of prediction sets does not match number of repetitions."
-    # assert cv_out["Outer Predictions"][0].shape == (num_samples, 3)
-    # np.testing.assert_almost_equal(
-    #     cv_out["Outer Predictions"][0][4, 1:3], np.array([0.00752, 0.99248]), decimal=4
-    # )
-
-    # print(cv_out["Inner Results"][0])
-    # print(cv_out["Inner Results"][0].columns)
-
-    # # We cannot know the order of results a priori, due to the
-    # # parallel saving to disk during runtime
-    # # so we check the sorted values
-
-    # # print(np.round(sorted(cv_out["Inner Results"][0]
-    # #       ["split0_test_score"].tolist()), decimals=4).tolist())
-    # assert all(
-    #     np.round(
-    #         sorted(cv_out["Inner Results"][0]["split0_test_score"].tolist()), decimals=4
-    #     )
-    #     == np.round(
-    #         sorted(
-    #             [
-    #                 0.3333,
-    #                 0.3333,
-    #                 0.3333,
-    #                 0.3333,
-    #                 0.3333,
-    #                 0.3333,
-    #                 0.3333,
-    #                 0.3333,
-    #                 0.3333,
-    #                 0.3333,
-    #                 0.3333,
-    #                 0.3333,
-    #                 0.7667,
-    #                 0.8222,
-    #                 0.8889,
-    #                 0.8889,
-    #                 0.8889,
-    #                 0.8889,
-    #                 0.8889,
-    #                 0.8889,
-    #                 0.9167,
-    #                 0.9167,
-    #                 0.9167,
-    #                 0.9167,
-    #                 0.9167,
-    #                 0.9167,
-    #                 0.9167,
-    #                 0.9167,
-    #                 0.9333,
-    #                 0.9333,
-    #                 0.9333,
-    #                 0.9333,
-    #                 0.9333,
-    #                 0.9333,
-    #                 0.9333,
-    #                 0.9333,
-    #                 1.0,
-    #                 1.0,
-    #                 1.0,
-    #             ]
-    #         ),
-    #         decimals=4,
-    #     )
-    # )
-
-    # print(
-    #     np.round(
-    #         cv_out["Inner Results"][0]["param_model__C"].tolist(), decimals=6
-    #     ).tolist()
-    # )
-    # assert all(
-    #     np.round(
-    #         sorted(cv_out["Inner Results"][0]["param_model__C"].tolist()), decimals=4
-    #     )
-    #     == np.round(
-    #         sorted(
-    #             [
-    #                 0.0001,
-    #                 0.000825,
-    #                 0.006813,
-    #                 0.056234,
-    #                 0.464159,
-    #                 3.831187,
-    #                 31.622777,
-    #                 261.015722,
-    #                 2154.43469,
-    #                 17782.7941,
-    #                 146779.926762,
-    #                 1211527.658629,
-    #                 10000000.0,
-    #                 0.0001,
-    #                 0.000825,
-    #                 0.006813,
-    #                 0.056234,
-    #                 0.464159,
-    #                 3.831187,
-    #                 31.622777,
-    #                 261.015722,
-    #                 2154.43469,
-    #                 17782.7941,
-    #                 146779.926762,
-    #                 1211527.658629,
-    #                 10000000.0,
-    #                 0.0001,
-    #                 0.000825,
-    #                 0.006813,
-    #                 0.056234,
-    #                 0.464159,
-    #                 3.831187,
-    #                 31.622777,
-    #                 261.015722,
-    #                 2154.43469,
-    #                 17782.7941,
-    #                 146779.926762,
-    #                 1211527.658629,
-    #                 10000000.0,
-    #             ]
-    #         ),
-    #         decimals=4,
-    #     )
-    # )
-
-    # assert np.unique(
-    #     cv_out["Inner Results"][0]["outer_split (unordered)"]
-    # ).tolist() == ["A", "B", "C"]
 
 
 @ignore_warnings(category=ConvergenceWarning)
@@ -604,3 +397,211 @@ def test_train_full_model_binary_classification_weighting_per_split(
         )
 
         assert False, "Check that sample weights were printed and disable test"
+
+
+# # Testing small subset of results
+# # as evaluate() is (TODO) tested elsewhere
+
+# # Testing summarized results
+# print(cv_out["Evaluation"]["Summary"])
+# assert (
+#     cv_out["Evaluation"]["Summary"]["What"]
+#     == "Summary of 2 evaluations from multiclass classification."
+# )
+# assert (
+#     np.round(cv_out["Evaluation"]["Summary"]["Scores"]["Accuracy"], decimals=5)
+#     == np.round(pd.Series([0.96, 0.0000, 0.96, 0.96, 0.000000]), decimals=5)
+# ).all()
+# assert (
+#     np.round(cv_out["Evaluation"]["Summary"]["Scores"]["Macro AUC"], decimals=5)
+#     == np.round(
+#         pd.Series([0.994196, 0.002994, 0.992079, 0.996313, 0.000000]), decimals=5
+#     )
+# ).all()
+
+# # Total (summed) confusion matrix
+# # Sums to 2 x num_samples == 100
+
+# # print(cv_out["Evaluation"]["Summary"]["Confusion Matrix"])
+# np.testing.assert_equal(
+#     cv_out["Evaluation"]["Summary"]["Confusion Matrix"].get_counts(),
+#     np.array([[34, 2, 0], [1, 20, 1], [0, 2, 40]]),
+# )
+# assert (
+#     np.sum(cv_out["Evaluation"]["Summary"]["Confusion Matrix"].get_counts())
+#     == 2 * num_samples
+# )
+
+# # Testing repetition evaluations
+# print(cv_out["Evaluation"]["Evaluations"])
+# assert cv_out["Evaluation"]["Evaluations"]["What"] == "Combined evaluations."
+# assert (
+#     len(cv_out["Evaluation"]["Evaluations"]["Scores"]) == 2
+# ), "Number of evaluations does not match number of repetitions."
+
+# # print(cv_out["Evaluation"]["Evaluations"]['Confusion Matrices'])
+# expected_conf_mats = {
+#     "Repetition": {
+#         "0": [[17, 1, 0], [0, 10, 1], [0, 1, 20]],
+#         "1": [[17, 1, 0], [1, 10, 0], [0, 1, 20]],
+#     }
+# }
+# for rep in range(2):
+#     np.testing.assert_equal(
+#         cv_out["Evaluation"]["Evaluations"]["Confusion Matrices"].get(
+#             f"Repetition.{rep}"
+#         ),
+#         expected_conf_mats["Repetition"][str(rep)],
+#     )
+
+# assert (
+#     cv_out["Evaluation"]["Evaluations"]["One-vs-All"]["Class"]
+#     == pd.Series([0, 1, 2, 0, 1, 2])
+# ).all()
+# print(cv_out["Evaluation"]["Evaluations"]["One-vs-All"]["TN"])
+# assert (
+#     cv_out["Evaluation"]["Evaluations"]["One-vs-All"]["TN"]
+#     == pd.Series([32, 37, 28, 31, 37, 29])
+# ).all()
+# assert (
+#     np.round(
+#         cv_out["Evaluation"]["Evaluations"]["One-vs-All"]["Balanced Accuracy"],
+#         decimals=5,
+#     )
+#     == np.round(
+#         pd.Series([0.972222, 0.928904, 0.958949, 0.956597, 0.928904, 0.976190]),
+#         decimals=5,
+#     )
+# ).all()
+
+# # Testing repetition predictions
+# print(cv_out["Outer Predictions"])
+# assert (
+#     len(cv_out["Outer Predictions"]) == 2
+# ), "Number of prediction sets does not match number of repetitions."
+# assert cv_out["Outer Predictions"][0].shape == (num_samples, 3)
+# np.testing.assert_almost_equal(
+#     cv_out["Outer Predictions"][0][4, 1:3], np.array([0.00752, 0.99248]), decimal=4
+# )
+
+# print(cv_out["Inner Results"][0])
+# print(cv_out["Inner Results"][0].columns)
+
+# # We cannot know the order of results a priori, due to the
+# # parallel saving to disk during runtime
+# # so we check the sorted values
+
+# # print(np.round(sorted(cv_out["Inner Results"][0]
+# #       ["split0_test_score"].tolist()), decimals=4).tolist())
+# assert all(
+#     np.round(
+#         sorted(cv_out["Inner Results"][0]["split0_test_score"].tolist()), decimals=4
+#     )
+#     == np.round(
+#         sorted(
+#             [
+#                 0.3333,
+#                 0.3333,
+#                 0.3333,
+#                 0.3333,
+#                 0.3333,
+#                 0.3333,
+#                 0.3333,
+#                 0.3333,
+#                 0.3333,
+#                 0.3333,
+#                 0.3333,
+#                 0.3333,
+#                 0.7667,
+#                 0.8222,
+#                 0.8889,
+#                 0.8889,
+#                 0.8889,
+#                 0.8889,
+#                 0.8889,
+#                 0.8889,
+#                 0.9167,
+#                 0.9167,
+#                 0.9167,
+#                 0.9167,
+#                 0.9167,
+#                 0.9167,
+#                 0.9167,
+#                 0.9167,
+#                 0.9333,
+#                 0.9333,
+#                 0.9333,
+#                 0.9333,
+#                 0.9333,
+#                 0.9333,
+#                 0.9333,
+#                 0.9333,
+#                 1.0,
+#                 1.0,
+#                 1.0,
+#             ]
+#         ),
+#         decimals=4,
+#     )
+# )
+
+# print(
+#     np.round(
+#         cv_out["Inner Results"][0]["param_model__C"].tolist(), decimals=6
+#     ).tolist()
+# )
+# assert all(
+#     np.round(
+#         sorted(cv_out["Inner Results"][0]["param_model__C"].tolist()), decimals=4
+#     )
+#     == np.round(
+#         sorted(
+#             [
+#                 0.0001,
+#                 0.000825,
+#                 0.006813,
+#                 0.056234,
+#                 0.464159,
+#                 3.831187,
+#                 31.622777,
+#                 261.015722,
+#                 2154.43469,
+#                 17782.7941,
+#                 146779.926762,
+#                 1211527.658629,
+#                 10000000.0,
+#                 0.0001,
+#                 0.000825,
+#                 0.006813,
+#                 0.056234,
+#                 0.464159,
+#                 3.831187,
+#                 31.622777,
+#                 261.015722,
+#                 2154.43469,
+#                 17782.7941,
+#                 146779.926762,
+#                 1211527.658629,
+#                 10000000.0,
+#                 0.0001,
+#                 0.000825,
+#                 0.006813,
+#                 0.056234,
+#                 0.464159,
+#                 3.831187,
+#                 31.622777,
+#                 261.015722,
+#                 2154.43469,
+#                 17782.7941,
+#                 146779.926762,
+#                 1211527.658629,
+#                 10000000.0,
+#             ]
+#         ),
+#         decimals=4,
+#     )
+# )
+
+# assert np.unique(
+#     cv_out["Inner Results"][0]["outer_split (unordered)"]
+# ).tolist() == ["A", "B", "C"]
