@@ -248,15 +248,16 @@ class SeededGridSearchCV(GridSearchCV):
             # NOTE: Cannot do this within the warning catcher as
             # it seems to become a recursive catch/warn/catch/warn/...
             # and blows up the memory
-            self.messenger(
-                warning_count_string,
-                add_msg_fn=warnings.warn,
-            )
-            for msg in warning_messages:
+            if warning_messages:
                 self.messenger(
-                    msg,
+                    warning_count_string,
                     add_msg_fn=warnings.warn,
                 )
+                for msg in warning_messages:
+                    self.messenger(
+                        msg,
+                        add_msg_fn=warnings.warn,
+                    )
 
         # TODO Perhaps handle if there's no best_estimator_?
         # Surely it will just fail downstream?
