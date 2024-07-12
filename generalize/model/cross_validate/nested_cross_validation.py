@@ -7,7 +7,6 @@ import warnings
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
-import torch
 from utipy import mk_dir, rm_dir, letter_strings, Messenger, check_messenger
 
 from generalize.evaluate.prepare_inputs import BinaryPreparer
@@ -62,7 +61,6 @@ def nested_cross_validate(
     rm_missing: bool = False,
     reps: int = 1,
     num_jobs: int = 1,
-    num_threads_torch: Optional[int] = None,
     seed: int = 1,
     grid_error_score: Union[str, int, float] = np.nan,
     cv_error_score: Union[str, int, float] = np.nan,
@@ -215,9 +213,6 @@ def nested_cross_validate(
         Number of jobs to run in parallel. Training the estimator and computing
         the score are parallelized over the cross-validation splits.
         ``-1`` means using all processors.
-    num_threads_torch : int or `None`
-        Number of threads TODO
-        See https://pytorch.org/docs/stable/notes/cpu_threading_torchscript_inference.html
     seed : int
         Random state used for splitting data into folds.
         Each repetition will use `seed`+repetition as seed.
@@ -417,10 +412,6 @@ def nested_cross_validate(
     )
 
     messenger(pipe)
-
-    # Set number of threads for torch models
-    if num_threads_torch:
-        torch.set_num_threads(num_threads_torch)
 
     # Create a partial grid where only the cv and seed args need to be set
 

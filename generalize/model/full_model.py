@@ -1,7 +1,6 @@
 from typing import Callable, Dict, List, Optional, Tuple, Union
 import numpy as np
 from sklearn.base import BaseEstimator
-import torch
 from utipy import Messenger, check_messenger
 
 from generalize.evaluate.prepare_inputs import BinaryPreparer
@@ -42,7 +41,6 @@ def train_full_model(
     add_y_singleton_dim: bool = False,
     rm_missing: bool = False,
     num_jobs: int = 1,
-    num_threads_torch: Optional[int] = None,
     seed: int = 1,
     grid_error_score: Union[str, int, float] = np.nan,
     # cv_error_score: Union[str, int, float] = np.nan,
@@ -182,9 +180,6 @@ def train_full_model(
         Number of jobs to run in parallel. Training the estimator and computing
         the score are parallelized over the cross-validation splits.
         ``-1`` means using all processors.
-    num_threads_torch : int or `None`
-        Number of threads TODO
-        See https://pytorch.org/docs/stable/notes/cpu_threading_torchscript_inference.html
     seed : int
         Random state used for splitting data into folds.
         Each repetition will use `seed`+repetition as seed.
@@ -341,10 +336,6 @@ def train_full_model(
     )
 
     messenger(pipe)
-
-    # Set number of threads for torch models
-    if num_threads_torch:
-        torch.set_num_threads(num_threads_torch)
 
     messenger("Preparing grid search")
 

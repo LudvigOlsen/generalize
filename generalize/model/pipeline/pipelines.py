@@ -14,7 +14,6 @@ from generalize.model.utils.weighting import calculate_sample_weight
 class SeedablePipeline(Pipeline):
     def __init__(
         self,
-        # steps: For torch, replace with: Union[BaseEstimator, Module]
         steps: List[Tuple[str, BaseEstimator]],
         is_seedable: bool,
         train_test_steps: List[str] = [],
