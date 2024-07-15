@@ -101,7 +101,7 @@ def select_samples(
     # Create mapping from the collapsed label names
     # to the original labels names
     if collapse_map is None or not collapse_map:
-        new_label_to_old_labels = {l: [l] for l in labels_to_use}
+        new_label_to_old_labels = {label: [label] for label in labels_to_use}
     else:
         if messenger.verbose:
             coll_string = "; ".join(
@@ -112,7 +112,9 @@ def select_samples(
             )
             messenger(f"Collapsing: {coll_string}")
         collapsed_labels = [v for vals in collapse_map.values() for v in vals]
-        non_collapsed_labels = [l for l in labels_to_use if l not in collapsed_labels]
+        non_collapsed_labels = [
+            label for label in labels_to_use if label not in collapsed_labels
+        ]
 
         # Case: labels_to_use = [0,1,2,3]; collapse_map = {0:[2,3]}
         # Here the original 0 label will be wrongly discarded
@@ -124,7 +126,7 @@ def select_samples(
             f"Found the following overlaps: {set(collapse_map.keys()).intersection(non_collapsed_labels)}"
         )
 
-        new_label_to_old_labels = {l: [l] for l in non_collapsed_labels}
+        new_label_to_old_labels = {label: [label] for label in non_collapsed_labels}
         new_label_to_old_labels.update(collapse_map)
 
     # Create additional mappings between labels (old/new) and label indices

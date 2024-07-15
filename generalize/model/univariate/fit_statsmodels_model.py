@@ -89,7 +89,7 @@ def fit_statsmodels_model(
     # Fit model
     try:
         result = model.fit()
-    except PerfectSeparationError as e:
+    except PerfectSeparationError:
         # Classification with perfectly separated classes
         msg = "Got a `PerfectSeparationError`. Returning NaNs."
         messenger(f"fit_statsmodels_model: {msg}")

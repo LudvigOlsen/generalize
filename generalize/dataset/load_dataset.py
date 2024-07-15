@@ -118,7 +118,7 @@ def load_dataset(
             feature_sets_string = (
                 f" ({feature_sets})" if feature_sets is not None else ""
             )
-            flattening_string = f" and flattened" if flatten_feature_sets else ""
+            flattening_string = " and flattened" if flatten_feature_sets else ""
             messenger(
                 f"Selected{flattening_string} feature sets{feature_sets_string}. "
                 f"New shape: {dataset.shape}"

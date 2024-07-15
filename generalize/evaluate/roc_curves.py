@@ -18,7 +18,6 @@ from generalize.evaluate.prepare_inputs import BinaryPreparer
 
 
 class ROCCurve:
-
     def __init__(
         self,
         fpr: np.ndarray,
@@ -430,7 +429,7 @@ class ROCCurve:
         """
         strings = ["ROC Curve:"]
         strings += [f"{key}: {val}" for key, val in d.items() if val is not None]
-        return f"\n  ".join(strings)
+        return "\n  ".join(strings)
 
     def __str__(self):
         d = self.to_printable_dict(max_array_elems=None, decimals=4)
@@ -438,7 +437,6 @@ class ROCCurve:
 
 
 class ROCCurves:
-
     def __init__(
         self,
     ) -> None:
@@ -820,4 +818,4 @@ class ROCCurves:
         ROCCurves._to_printable_dicts(curves, paths=self.paths)
         curves_string = _dict_to_str(curves)
         strings += [f"ROC Curves:\n    {curves_string}"]
-        return f"\n  ".join(strings)
+        return "\n  ".join(strings)

@@ -1,20 +1,16 @@
-
-
 from typing import List, Tuple, Union
 import numpy as np
 
 
 def order_by_label(
-    datasets: List[np.ndarray],
-    labels: Union[np.ndarray, List[str]],
-    copy: bool = True
+    datasets: List[np.ndarray], labels: Union[np.ndarray, List[str]], copy: bool = True
 ) -> Tuple[List[np.ndarray], Union[List[str], np.ndarray]]:
     """
     Order a list of datasets and corresponding labels by the labels.
 
     Parameters
     ----------
-    datasets 
+    datasets
         A list of `numpy.ndarray`s that share the
         same labels. The first dimension will be ordered by `labels`.
     labels

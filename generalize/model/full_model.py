@@ -64,7 +64,7 @@ def train_full_model(
         Targets (one per sample).
     model : callable
         Model instance with a scikit-learn compatible interface.
-        We actively support scikit-learn and skorch models.
+        We actively support scikit-learn models.
         Added to a Pipeline (see `sklearn.pipeline.Pipeline`),
         why it must have `fit()`, `predict()` and `transform()` methods.
     grid : Dict[str, List[any]]
@@ -342,7 +342,7 @@ def train_full_model(
     # Ensure grid names point to their pipeline step
     pipeline_keys = list(pipe.named_steps.keys())
     for key in grid.keys():
-        if not "__" in key or key.split("__")[0] not in pipeline_keys:
+        if "__" not in key or key.split("__")[0] not in pipeline_keys:
             raise ValueError(
                 f"Grid keys must be prefixed by either 'model__' or "
                 f"'<transformer name>__' but got {key}."
