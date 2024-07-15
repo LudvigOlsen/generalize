@@ -6,7 +6,7 @@ from sklearn.linear_model import LogisticRegression
 
 from generalize.model.transformers.dim_wrapper import DimTransformerWrapper
 from generalize.model.transformers.row_scaler import RowScaler
-from generalize.model.cross_validate.grid_search import SeededGridSearchCV
+from generalize.model.cross_validate.grid_search import NestableGridSearchCV
 
 
 def test_row_scaler_transformer_simple():
@@ -307,7 +307,7 @@ def test_row_scaler_transformer_in_gridsearch():
 
     pipe = Pipeline(steps=steps)
 
-    grid = SeededGridSearchCV(pipe, cv=3, param_grid={"model__C": [0.1, 1]}, seed=3)
+    grid = NestableGridSearchCV(pipe, cv=3, param_grid={"model__C": [0.1, 1]}, seed=3)
 
     grid.fit(X=x, y=y)
 

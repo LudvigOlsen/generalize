@@ -5,7 +5,7 @@ from utipy import Messenger, check_messenger
 
 from generalize.evaluate.prepare_inputs import BinaryPreparer
 from generalize.model.cross_validate.kfolder import specified_folds_iterator, KFolder
-from generalize.model.cross_validate.grid_search import SeededGridSearchCV
+from generalize.model.cross_validate.grid_search import NestableGridSearchCV
 from generalize.evaluate.evaluate_repetitions import evaluate_repetitions
 from generalize.utils.missing_data import remove_missing_data
 from generalize.model.pipeline.pipelines import create_pipeline
@@ -359,8 +359,8 @@ def train_full_model(
     else:
         folder = specified_folds_iterator(folds=split)
 
-    # Create function that returns a SeededGridSearchCV object
-    estimator = SeededGridSearchCV(
+    # Create function that returns a NestableGridSearchCV object
+    estimator = NestableGridSearchCV(
         estimator=pipe,
         param_grid=grid,
         scoring=metric,

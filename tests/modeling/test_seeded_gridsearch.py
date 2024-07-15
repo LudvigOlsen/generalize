@@ -4,7 +4,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
 
 from generalize.model.cross_validate.grid_search import (
-    SeededGridSearchCV,
+    NestableGridSearchCV,
     make_lowest_c_refit_strategy,
 )
 from generalize.model.pipeline.pipeline_designer import PipelineDesigner
@@ -30,7 +30,7 @@ def test_custom_refit_strategy():
     param_grid = {"model__C": [0.1, 1, 10, 100]}
 
     # Setup GridSearchCV with the custom refit strategy
-    grid_search = SeededGridSearchCV(
+    grid_search = NestableGridSearchCV(
         pipeline,
         param_grid,
         cv=5,
@@ -103,7 +103,7 @@ def test_inner_results(tmp_path):
     param_grid = {"model__C": [0.1, 1, 10, 100]}
 
     # Setup GridSearchCV with the custom refit strategy
-    grid_search = SeededGridSearchCV(
+    grid_search = NestableGridSearchCV(
         pipeline,
         param_grid,
         cv=5,

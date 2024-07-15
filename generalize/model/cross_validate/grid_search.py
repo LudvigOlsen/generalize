@@ -15,7 +15,7 @@ from utipy import Messenger, check_messenger
 from generalize.model.utils.weighting import calculate_sample_weight
 
 
-class SeededGridSearchCV(GridSearchCV):
+class NestableGridSearchCV(GridSearchCV):
     def __init__(
         self,
         estimator,
@@ -39,8 +39,10 @@ class SeededGridSearchCV(GridSearchCV):
         messenger: Optional[Callable] = Messenger(verbose=True, indent=0, msg_fn=print),
     ) -> None:
         """
-        GridSearch class with option to set the seed in a skorch callback
-        and to save the `.cv_results_` dict to a file after `.fit()`.
+        GridSearch class used in nested cross-validation with options to:
+            - Save .cv_results_ to disk.
+            - Calculate `sample_weight`
+            - Set the seed in a `skorch` callback
 
         NOTE: `estimator` is expected to be a `Pipeline` where
         the final model is called `model`.
@@ -50,7 +52,7 @@ class SeededGridSearchCV(GridSearchCV):
             Each sample in a group gets the weight `1 / group_size`.
             Passed to model's `.fit(sample_weight=)` method.
             When existing sample weights are passed via
-            `SeededGridSearchCV.fit(fit_params={"sample_weight":})`
+            `NestableGridSearchCV.fit(fit_params={"sample_weight":})`
             the two sets of sample weights are multiplied
             and normalized to sum-to-length.
             Note: Requires `estimator` to be a `Pipeline` where
@@ -180,7 +182,7 @@ class SeededGridSearchCV(GridSearchCV):
                     fit_problems.append(
                         (
                             e,
-                            "Convergence warning during SeededGridSearch.fit():\n  "
+                            "Convergence warning during NestableGridSearchCV.fit():\n  "
                             + str(e)
                             + "\nRunning fit() again.",
                         )
@@ -193,7 +195,7 @@ class SeededGridSearchCV(GridSearchCV):
                     fit_problems.append(
                         (
                             e,
-                            "Future warning during SeededGridSearch.fit():\n  "
+                            "Future warning during NestableGridSearchCV.fit():\n  "
                             + str(e)
                             + "\nRunning fit() again.",
                         )
@@ -205,7 +207,7 @@ class SeededGridSearchCV(GridSearchCV):
                     fit_problems.append(
                         (
                             e,
-                            "Error in SeededGridSearch.fit():\n  "
+                            "Error in NestableGridSearchCV.fit():\n  "
                             + str(e)
                             + "\n"
                             + format_exc(),
@@ -263,7 +265,7 @@ class SeededGridSearchCV(GridSearchCV):
         # Surely it will just fail downstream?
         if not hasattr(self, "best_estimator_"):
             self.messenger(
-                "`SeededGridSearchCV` has no `best_estimator_` "
+                "`NestableGridSearchCV` has no `best_estimator_` "
                 "after `GridSearchCV.fit()`:",
                 add_msg_fn=warnings.warn,
             )
@@ -335,7 +337,7 @@ class SeededGridSearchCV(GridSearchCV):
 
             except BaseException as e:
                 self.messenger(
-                    "Error when saving in SeededGridSearch.fit():",
+                    "Error when saving in NestableGridSearchCV.fit():",
                     add_msg_fn=warnings.warn,
                 )
                 self.messenger(e, add_msg_fn=warnings.warn, add_indent=2)

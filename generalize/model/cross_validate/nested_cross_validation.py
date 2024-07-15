@@ -13,7 +13,7 @@ from generalize.evaluate.prepare_inputs import BinaryPreparer
 from generalize.model.cross_validate.sklearn_cross_validate import (
     cross_validate_with_predictions,
 )
-from generalize.model.cross_validate.grid_search import SeededGridSearchCV
+from generalize.model.cross_validate.grid_search import NestableGridSearchCV
 from generalize.model.cross_validate.kfolder import (
     KFolder,
     GroupSpecifiedFolder,
@@ -427,9 +427,9 @@ def nested_cross_validate(
                 f"'<transformer name>__' but got {key}."
             )
 
-    # Create function that returns a SeededGridSearchCV object
+    # Create function that returns a NestableGridSearchCV object
     partial_grid = partial(
-        SeededGridSearchCV,
+        NestableGridSearchCV,
         estimator=pipe,
         param_grid=grid,
         scoring=inner_metric,

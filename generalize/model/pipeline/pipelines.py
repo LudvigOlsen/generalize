@@ -11,7 +11,7 @@ from generalize.model.pipeline.pipeline_designer import PipelineDesigner
 from generalize.model.utils.weighting import calculate_sample_weight
 
 
-class SeedablePipeline(Pipeline):
+class NestablePipeline(Pipeline):
     def __init__(
         self,
         steps: List[Tuple[str, BaseEstimator]],
@@ -26,8 +26,11 @@ class SeedablePipeline(Pipeline):
         verbose: bool = False,
         messenger: Optional[Callable] = Messenger(verbose=True, indent=0, msg_fn=print),
     ) -> None:
-        """Wrapper for adding the `is_seedable` attribute.
-        Assigning the attribute to a pipeline object does not seem
+        """
+        Pipeline class with additional functionality.
+        
+        Sets the `is_seedable` attribute (skorch models) since 
+        assigning the attribute to a pipeline object does not seem
         to work with the cloning in the cross-validation.
 
         train_test_steps
@@ -50,12 +53,12 @@ class SeedablePipeline(Pipeline):
         if steps[-1][0] != "model":
             if weight_loss_by_groups:
                 raise ValueError(
-                    "SeedablePipeline: `weight_loss_by_groups` can only be enabled "
+                    "NestablePipeline: `weight_loss_by_groups` can only be enabled "
                     "when the last step is named `'model'`."
                 )
             if weight_loss_by_class:
                 raise ValueError(
-                    "SeedablePipeline: `weight_loss_by_class` can only be enabled "
+                    "NestablePipeline: `weight_loss_by_class` can only be enabled "
                     "when the last step is named `'model'`."
                 )
 
@@ -269,7 +272,7 @@ def create_pipeline(
         Whether to weight samples by the group size in training loss.
         Each sample in a group gets the weight `1 / group_size`.
         Passed to model's `.fit(sample_weight=)` method.
-        NOTE: When training with `SeededGridSearchCV`, this
+        NOTE: When training with `NestableGridSearchCV`, this
         weighting is taken care of by that class!
 
     Returns
@@ -319,7 +322,7 @@ def create_pipeline(
 
     # Create pipeline
     # Add flag for whether the model is seedable
-    pipe = SeedablePipeline(
+    pipe = NestablePipeline(
         steps=steps,
         is_seedable=hasattr(model, "is_seedable") and model.is_seedable,
         train_test_steps=train_test_transformers,
