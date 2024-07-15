@@ -4,7 +4,7 @@ from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
 class PCAByExplainedVariance(PCA):
-    def __init__(self, target_variance: float = 0.9, **kwargs):
+    def __init__(self, target_variance: float = 1.0, **kwargs):
         super().__init__(n_components=None, **kwargs)
         self.target_variance = target_variance
 
@@ -21,15 +21,19 @@ class PCAByExplainedVariance(PCA):
         # Fit the PCA model with all components
         super().fit(X)
 
-        # Calculate the cumulative explained variance
-        cumulative_variance = np.cumsum(self.explained_variance_ratio_)
+        if self.target_variance >= 1.0:
+            # Get all components
+            selected_n_components = self.n_components_
+        else:
+            # Calculate the cumulative explained variance
+            cumulative_variance = np.cumsum(self.explained_variance_ratio_)
 
-        # Find the number of components needed to explain at least p% variance
-        # We can max find the number of components found by the super class though (sanity check)
-        selected_n_components = min(
-            self.n_components_,
-            np.argmax(cumulative_variance >= self.target_variance) + 1,
-        )
+            # Find the number of components needed to explain at least p% variance
+            # We can max find the number of components found by the super class though (sanity check)
+            selected_n_components = min(
+                self.n_components_,
+                np.argmax(cumulative_variance >= self.target_variance) + 1,
+            )
 
         # Adjust the components to the selected number
         self.n_components_ = selected_n_components

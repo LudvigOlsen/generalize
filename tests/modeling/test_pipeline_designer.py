@@ -8,8 +8,8 @@ from generalize.model.transformers.pca_by_explained_variance import (
 
 def test_pipeline_designer():
     np.random.seed(1)
-    x = np.random.normal(size=(5, 10))
-    y = np.random.choice((0, 1), size=(5))
+    x = np.random.normal(size=(15, 10))
+    y = np.random.choice((0, 1), size=(15))
 
     # Create a pipeline designer
     designer = PipelineDesigner()
@@ -42,7 +42,7 @@ def test_pipeline_designer():
         "features__pca_by_variance",
         PCAByExplainedVariance,
         add_dim_transformer_wrapper=True,
-        kwargs={"target_variance": 0.9},
+        kwargs={"target_variance": 1.0},
     )
     designer.collect()
     designer.add_step(
@@ -79,8 +79,8 @@ def test_pipeline_designer():
 
 def test_pipeline_designer_with_empty_split():
     np.random.seed(1)
-    x = np.random.normal(size=(5, 10))
-    y = np.random.choice((0, 1), size=(5))
+    x = np.random.normal(size=(15, 10))
+    y = np.random.choice((0, 1), size=(15))
 
     # Create a pipeline designer
     designer = PipelineDesigner()
@@ -114,7 +114,7 @@ def test_pipeline_designer_with_empty_split():
         "features__pca_by_variance",
         PCAByExplainedVariance,
         add_dim_transformer_wrapper=True,
-        kwargs={"target_variance": 0.9},
+        kwargs={"target_variance": 1.0},
     )
     designer.collect()
     designer.add_step(

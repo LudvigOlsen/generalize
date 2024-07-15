@@ -36,7 +36,8 @@ def test_create_pipeline_3d():
 
     print(x3d_tr.shape)
 
-    assert x3d_tr.shape == (5, 1, 3 * 10 * 2)
+    # Max n_samples components during PCA so 3x5
+    assert x3d_tr.shape == (5, 1, 3*5)
 
     pipe = create_pipeline(
         model=LogisticRegression(),
@@ -86,7 +87,8 @@ def test_create_pipeline_2d():
 
     print(x2d_tr.shape)
 
-    assert x2d_tr.shape == (5, 1, 10 * 2)
+    # max(num samples, num features)
+    assert x2d_tr.shape == (5, 1, 5)
 
     pipe = create_pipeline(
         model=LogisticRegression(),
