@@ -335,7 +335,7 @@ def train_full_model(
         split_weights=None,  # Taken care of in GridSearch
     )
 
-    messenger(pipe)
+    messenger("Pipeline:\n", pipe)
 
     messenger("Preparing grid search")
 

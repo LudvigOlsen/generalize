@@ -662,7 +662,7 @@ class Evaluator:
             confusion_matrices: ConfusionMatrices = combined_evaluations[
                 "Confusion Matrices"
             ]
-            confusion_matrices.save(file_path=out_path / f"confusion_matrices.json")
+            confusion_matrices.save(file_path=out_path / "confusion_matrices.json")
 
         if "One-vs-All" in combined_evaluations:
             combined_evaluations["One-vs-All"].to_csv(
@@ -671,7 +671,7 @@ class Evaluator:
 
         if "ROC" in combined_evaluations:
             roc_collection: ROCCurves = combined_evaluations["ROC"]
-            roc_collection.save(file_path=out_path / f"ROC_curves.json")
+            roc_collection.save(file_path=out_path / "ROC_curves.json")
 
     @staticmethod
     def save_evaluation_summary(
@@ -712,14 +712,14 @@ class Evaluator:
                 "Confusion Matrices"
             ]
             confusion_matrices.save(
-                file_path=out_path / f"total_confusion_matrices.json"
+                file_path=out_path / "total_confusion_matrices.json"
             )
         elif "Confusion Matrix" in evaluation_summary:
             confusion_matrices: ConfusionMatrices = evaluation_summary[
                 "Confusion Matrix"
             ].to_collection()
             confusion_matrices.save(
-                file_path=out_path / f"total_confusion_matrices.json"
+                file_path=out_path / "total_confusion_matrices.json"
             )
 
         if "Splits" in evaluation_summary:
@@ -865,7 +865,7 @@ class Evaluator:
             Dictionary with the threshold and its specificity and sensitivity.
         """
         if task != "binary_classification":
-            raise NotImplemented(
+            raise NotImplementedError(
                 f"Only implemented for binary classification but `task` was: {task}"
             )
         return BinaryEvaluator.get_threshold_at_specificity(
@@ -907,7 +907,7 @@ class Evaluator:
             Dictionary with the threshold and its specificity and sensitivity.
         """
         if task != "binary_classification":
-            raise NotImplemented(
+            raise NotImplementedError(
                 f"Only implemented for binary classification but `task` was: {task}"
             )
         return BinaryEvaluator.get_threshold_at_max_j(
