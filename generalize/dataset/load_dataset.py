@@ -48,7 +48,8 @@ def load_dataset(
     flatten_feature_sets
         Whether to concatenate feature sets or
         keep the 2nd dimension, *when the dataset has 3 dimensions*.
-        When `indices` is specified, this must be `True`.
+        When `indices` is specified, this usually must be `True`,
+        unless the indices selected are the same for all feature sets.
     as_type
         The dtype to set the dataset `numpy.ndarray` as.
     param name
@@ -83,6 +84,10 @@ def load_dataset(
         x_name="Loaded dataset",
     )
 
+    assert (
+        feature_sets is None or isinstance(feature_sets, list) and len(feature_sets) > 0
+    ), "`feature_sets` must be either `None` or a non-empty list of integers."
+
     name_err_string = f"({name}) " if name is not None else ""
     messenger(f"{name}:" if name is not None else "Loaded dataset:")
     with messenger.indentation(add_indent=2):
@@ -109,13 +114,11 @@ def load_dataset(
                 dataset = dataset[:, indices]
         elif dataset.ndim == 3:
             if indices is not None:
-                if not flatten_feature_sets:
-                    raise ValueError(
-                        f"{name_err_string}When `indices` are specified, "
-                        "`flatten_feature_sets` must be enabled."
-                    )
                 [dataset], indices = select_indices(
-                    datasets=[dataset], indices=indices, add_feature_sets=feature_sets
+                    datasets=[dataset],
+                    indices=indices,
+                    add_feature_sets=feature_sets,
+                    flatten_feature_sets=flatten_feature_sets,
                 )
             else:
                 [dataset] = select_feature_sets(

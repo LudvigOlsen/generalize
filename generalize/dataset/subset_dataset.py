@@ -2,6 +2,8 @@ from typing import Callable, List, Optional, Tuple, Union
 import numpy as np
 from utipy import Messenger, check_messenger
 
+from generalize.dataset.utils import all_values_same
+
 
 def select_samples(
     datasets: List[Optional[np.ndarray]],
@@ -378,14 +380,15 @@ def select_indices(
     datasets: List[Optional[np.ndarray]],
     indices: Optional[List[int]] = None,
     add_feature_sets: Optional[List[int]] = None,
+    flatten_feature_sets: bool = True,
     copy: bool = True,
     return_updated_indices: bool = False,
 ) -> Tuple[List[np.ndarray], Optional[List[List[Tuple[int, int]]]]]:
     """
     Select the (feature set, feature) indices to use and flatten them to 2D datasets.
 
-    NOTE: The flattening is required as we may have a different number of features
-    per feature set.
+    NOTE: The flattening is usually required as we may have a different number of features
+    per feature set. Set `flatten_feature_sets = False` when you know this is not the case!
 
     Parameters
     ----------
@@ -400,6 +403,11 @@ def select_indices(
         When `None`, all feature sets and features are selected.
     add_feature_sets
         Additional features sets to get all features for.
+    flatten_feature_sets
+        Whether to flatten the 3D arrays to 2D arrays.
+        Required when not selecting the same features
+        for all feature sets. Only disable if
+        you know that is the case.
     copy
         Whether to return a copy of the datasets
         to avoid altering the input datasets.
@@ -416,6 +424,12 @@ def select_indices(
     list (when `return_updated_indices`) or `None`
         List with updated tuple indices.
     """
+    if indices is not None and (
+        not isinstance(indices[0], tuple) or len(indices[0]) != 2
+    ):
+        raise ValueError(
+            "When `indices` is specified, it must be a list of tuples of length 2."
+        )
     new_datasets = [0] * len(datasets)
     if return_updated_indices:
         new_indices = [0] * len(datasets)
@@ -440,7 +454,9 @@ def select_indices(
                     for fset in range(data.shape[1])
                     for feat in range(data.shape[2])
                 ]
-            new_datasets[data_idx] = data.reshape(data.shape[0], -1)
+            new_datasets[data_idx] = (
+                data.reshape(data.shape[0], -1) if flatten_feature_sets else data
+            )
             continue
         else:
             assert isinstance(indices, list)
@@ -465,10 +481,35 @@ def select_indices(
         features += indices_features
 
         # Subset data
-        data = data[:, feature_sets, features]
+        if flatten_feature_sets:
+            data = data[:, feature_sets, features]
+        else:
+            # Without flattening
+            # Requires subsetting per feature set then concatenating
+            # Due to the tuple indexing
+            feature_set_to_feature_indices = {fs: [] for fs in set(feature_sets)}
+            for fs, fi in zip(feature_sets, features):
+                feature_set_to_feature_indices[fs].append(fi)
+
+            if not all_values_same(feature_set_to_feature_indices):
+                raise ValueError(
+                    "`select_indices`: When `flatten_feature_sets = False`, "
+                    "all feature indices must be the same for all feature sets."
+                )
+
+            data_per_feature_set = []
+            for fs, fis in feature_set_to_feature_indices.items():
+                data_per_feature_set.append(data[:, fs, fis])
+
+            try:
+                data = np.stack(data_per_feature_set, axis=1)
+            except:  # noqa: E722
+                raise ValueError(
+                    "`select_indices`: Can't stack selected features. Seems to require flattening."
+                )
 
         # Flatten to (samples, selected (feature set, feature) coordinates)
-        if data.ndim == 3:
+        if data.ndim == 3 and flatten_feature_sets:
             data = data.reshape(data.shape[0], -1)
 
         new_datasets[data_idx] = data
