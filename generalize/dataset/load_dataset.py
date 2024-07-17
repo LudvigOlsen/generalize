@@ -1,10 +1,11 @@
 import pathlib
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, List, Optional, Tuple, Union, Dict
 import numpy as np
 import pandas as pd
 from utipy import Messenger, check_messenger
 
 from generalize.dataset.subset_dataset import select_feature_sets, select_indices
+from generalize.dataset.assert_array_shape import assert_shape
 
 
 def load_dataset(
@@ -15,6 +16,7 @@ def load_dataset(
     as_type: Callable = np.float32,
     name: Optional[str] = None,
     allow_pickle: bool = True,
+    expected_shape: Optional[Dict[int, int]] = None,
     messenger: Optional[Callable] = Messenger(verbose=True, indent=0, msg_fn=print),
 ) -> np.ndarray:
     """
@@ -53,6 +55,9 @@ def load_dataset(
         Name of the dataset. Purely for messaging (printing/logging) purposes.
     allow_pickle
         Whether to allow un-pickling when loading the dataset. See `numpy.load()`.
+    expected_shape
+        An optional dict mapping a dimension index to an expected shape.
+        A `ValueError` is thrown when the dimension expectations are not met.
     messenger
         A `utipy.Messenger` instance used to print/log/... information.
         When `None`, no printing/logging is performed.
@@ -70,9 +75,12 @@ def load_dataset(
     # Load dataset
     dataset = np.load(path, allow_pickle=allow_pickle).astype(as_type)
 
-    assert dataset.ndim in [2, 3], (
-        f"`dataset` must have 2 or 3 dimensions (samples, (optional: feature sets), "
-        f"features) but had shape: {dataset.shape}"
+    # Check shape is correct
+    assert_shape(
+        x=dataset,
+        expected_n_dims=[2, 3],
+        expected_dim_sizes=expected_shape,
+        x_name="Loaded dataset",
     )
 
     name_err_string = f"({name}) " if name is not None else ""
