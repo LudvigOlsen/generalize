@@ -498,7 +498,9 @@ class Evaluator:
 
         # Get total NaN counts
         nan_counts_summary = (
-            all_nan_counts.groupby(["Threshold Version"]).sum().reset_index()
+            all_nan_counts.groupby(["Threshold Version"])
+            .sum(numeric_only=True)
+            .reset_index()
         )
         nan_counts_summary["Measure"] = "# Total NaNs"
 
