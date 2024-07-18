@@ -242,7 +242,7 @@ class Evaluator:
                     )
 
                 out["Confusion Matrices"].add(
-                    path=f"{eval_idx_colname}.{eval_idx}",
+                    path=f"{eval_idx_colname}.{eval_name}",
                     matrix=nested_getattr(
                         evaluation, "Confusion Matrix.confusion_matrix"
                     ),
