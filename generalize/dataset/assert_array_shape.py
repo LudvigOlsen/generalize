@@ -33,16 +33,21 @@ def assert_shape(
         When shape expectations are not met or function is used wrongly.
     """
 
-    if (
-        expected_n_dims is not None
-        and expected_dim_sizes is not None
-        and max(expected_n_dims) <= max(expected_dim_sizes.keys())
-    ):
-        raise ValueError(
-            "`assert_shape`: `expected_dim_sizes` contained check of "
-            "dimension index that's not allowed by `expected_n_dims`: "
-            f"{max(expected_n_dims)} <= {max(expected_dim_sizes.keys())}."
+    if expected_n_dims is not None:
+        max_expected_n_dims = (
+            expected_n_dims
+            if isinstance(expected_n_dims, int)
+            else max(expected_n_dims)
         )
+
+        if expected_dim_sizes is not None and max_expected_n_dims <= max(
+            expected_dim_sizes.keys()
+        ):
+            raise ValueError(
+                "`assert_shape`: `expected_dim_sizes` contained check of "
+                "dimension index that's not allowed by `expected_n_dims`: "
+                f"{max_expected_n_dims} <= {max(expected_dim_sizes.keys())}."
+            )
 
     # Check shape assertions
     if expected_n_dims is not None:
