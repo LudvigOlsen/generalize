@@ -51,6 +51,19 @@ class ROCCurve:
         self.thresholds = thresholds
         self.auc = auc
 
+        if not ROCCurve._check_array_order(fpr):
+            raise ValueError("`fpr` must be sorted in ascending order.")
+        if not ROCCurve._check_array_order(tpr):
+            raise ValueError("`tpr` must be sorted in ascending order.")
+        if not ROCCurve._check_array_order(fpr, desc=True):
+            raise ValueError("`thresholds` must be sorted in descending order.")
+
+    @staticmethod
+    def _check_array_order(x, desc: bool = False) -> bool:
+        if desc:
+            return np.array_equal(x, np.sort(x)[::-1])
+        return np.array_equal(x, np.sort(x))
+
     @staticmethod
     def from_data(
         targets: Union[list, np.ndarray],
@@ -698,8 +711,12 @@ class ROCCurves:
         # Calculate the mean AUC
         mean_auc = auc_from_xy(mean_fpr, mean_tpr)
 
+        # Reverse arrays to be consistent with rest of ROC Curves
         return ROCCurve(
-            fpr=mean_fpr, tpr=mean_tpr, thresholds=common_thresholds, auc=mean_auc
+            fpr=mean_fpr[::-1],
+            tpr=mean_tpr[::-1],
+            thresholds=common_thresholds[::-1],
+            auc=mean_auc,
         )
 
     def to_dict(self, copy: bool = True) -> dict:
