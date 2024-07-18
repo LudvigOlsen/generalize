@@ -55,7 +55,7 @@ class ROCCurve:
             raise ValueError("`fpr` must be sorted in ascending order.")
         if not ROCCurve._check_array_order(tpr):
             raise ValueError("`tpr` must be sorted in ascending order.")
-        if not ROCCurve._check_array_order(fpr, desc=True):
+        if not ROCCurve._check_array_order(thresholds, desc=True):
             raise ValueError("`thresholds` must be sorted in descending order.")
 
     @staticmethod
