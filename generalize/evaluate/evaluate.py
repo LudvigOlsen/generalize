@@ -246,6 +246,7 @@ class Evaluator:
         if "ROC" in evaluations[0]:
             out["ROC"] = ROCCurves()
             for eval_idx, eval in enumerate(evaluations):
+                print(eval)
                 out["ROC"].add(
                     path=f"{eval_idx_colname}.{eval_idx}", roc_curve=eval["ROC"]
                 )
