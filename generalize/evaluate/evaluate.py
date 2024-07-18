@@ -246,9 +246,18 @@ class Evaluator:
         if "ROC" in evaluations[0]:
             out["ROC"] = ROCCurves()
             for eval_idx, eval in enumerate(evaluations):
-                print(eval)
+                # Get Split name if available
+                # TODO: This is a hack. Perhaps eval should have a name key when meaningful?
+                eval_name = eval_idx
+                if "Split" in eval["Scores"].columns and eval["Scores"].shape[0] == 1:
+                    eval_name = (
+                        str(eval["Scores"]["Split"].tolist()[0])
+                        .replace(" ", "_")
+                        .replace(".", "_")
+                    )
+
                 out["ROC"].add(
-                    path=f"{eval_idx_colname}.{eval_idx}", roc_curve=eval["ROC"]
+                    path=f"{eval_idx_colname}.{eval_name}", roc_curve=eval["ROC"]
                 )
 
         return out
