@@ -10,7 +10,7 @@ from generalize.evaluate.evaluate_repetitions import evaluate_repetitions
 from generalize.utils.missing_data import remove_missing_data
 from generalize.model.pipeline.pipelines import create_pipeline
 from generalize.model.utils import detect_train_only, add_split_to_groups
-from generalize.evaluate.roc_curves import ROCCurves
+from generalize.evaluate.roc_curves import ROCCurves, ROCCurve
 
 # TODO Consider order of the arguments
 # TODO Should split be allowed to have a split per repetition?
@@ -452,11 +452,22 @@ def train_full_model(
         f"Evaluation of full model ({task.replace('_',' ')}) on *training* data."
     )
 
-    # Calculate average ROC curve for extracting thresholds during inference
+    # Calculate average and overall ROC curves for extracting thresholds during inference
     if "ROC" in evaluation:
+        # Average ROC curve
         roc_curves: ROCCurves = evaluation["ROC"]
         average_roc_curve = roc_curves.get_average_roc_curves(paths=roc_curves.paths)
         evaluation["ROC"].add(path="Average", roc_curve=average_roc_curve)
+
+        # Overall ROC curve
+        evaluation["ROC"].add(
+            path="Overall",
+            roc_curve=ROCCurve.from_data(
+                targets=predictions["Target"].to_numpy(),
+                predicted_probabilities=predictions["Prediction"].to_numpy(),
+                positive=1,
+            ),
+        )
 
     return {
         "Estimator": best_estimator,
