@@ -453,10 +453,10 @@ def train_full_model(
     )
 
     # Calculate average ROC curve for extracting thresholds during inference
-    if "ROC Curves" in evaluation:
-        roc_curves: ROCCurves = evaluation["ROC Curves"]
+    if "ROC" in evaluation:
+        roc_curves: ROCCurves = evaluation["ROC"]
         average_roc_curve = roc_curves.get_average_roc_curves(paths=roc_curves.paths)
-        roc_curves.add(path="Average", roc_curve=average_roc_curve)
+        evaluation["ROC"].add(path="Average", roc_curve=average_roc_curve)
 
     return {
         "Estimator": best_estimator,
