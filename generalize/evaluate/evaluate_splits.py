@@ -463,7 +463,7 @@ class MultisetEvaluator:
 
     @staticmethod
     def _get_thresholds(
-        thresholds: Optional[Union[Dict[str, float], float, List[float]]]
+        thresholds: Optional[Union[Dict[str, float], float, List[float]]],
     ) -> Tuple[Optional[List[float]], List[str]]:
         """
         Only relevant for binary classification.
@@ -488,9 +488,9 @@ class MultisetEvaluator:
         else:
             # Default thresholds
             threshold_names = [
-                "0.5 Threshold",
                 "Max. J Threshold",
                 "High Specificity Threshold",
+                "0.5 Threshold",
             ]
 
         return thresholds, threshold_names
@@ -525,9 +525,9 @@ class MultisetEvaluator:
 
         # Collect default thresholds
         thresholds = [
-            0.5,
             max_j["Threshold"],
             high_specificity["Threshold"],
+            0.5,
         ]
 
         return thresholds
