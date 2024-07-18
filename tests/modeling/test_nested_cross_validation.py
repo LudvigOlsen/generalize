@@ -1,5 +1,4 @@
 
-import os
 import warnings
 import numpy as np
 from numpy.testing import assert_array_almost_equal
@@ -321,10 +320,10 @@ def test_nested_cross_validate_binary_classification(xy_binary_classification, L
 
     assert cv_out["Evaluation"]["Summary"]["What"] == "Evaluation summaries from binary classification."
     assert (cv_out["Evaluation"]["Summary"]["Scores"]['Threshold Version'] == pd.Series([
-        "0.5 Threshold", "0.5 Threshold", "0.5 Threshold", "0.5 Threshold", "0.5 Threshold",
         "Max. J Threshold", "Max. J Threshold", "Max. J Threshold", "Max. J Threshold", "Max. J Threshold",
         "High Specificity Threshold", "High Specificity Threshold", "High Specificity Threshold",
         "High Specificity Threshold", "High Specificity Threshold",
+        "0.5 Threshold", "0.5 Threshold", "0.5 Threshold", "0.5 Threshold", "0.5 Threshold",
     ])).all()
     assert (cv_out["Evaluation"]["Summary"]["Scores"]['Measure'] == pd.Series([
         "Average", "SD", "Min", "Max", "# NaNs",
@@ -332,9 +331,9 @@ def test_nested_cross_validate_binary_classification(xy_binary_classification, L
         "Average", "SD", "Min", "Max", "# NaNs",
     ])).all()
     assert (np.round(cv_out["Evaluation"]["Summary"]["Scores"]["Accuracy"], decimals=5) == np.round(pd.Series([
+        0.97, 0.014142, 0.96, 0.98, 0.00,
+        0.97, 0.014142, 0.96, 0.98, 0.00,
         0.95, 0.014142, 0.94, 0.96, 0.000000,
-        0.97, 0.014142, 0.96, 0.98, 0.00,
-        0.97, 0.014142, 0.96, 0.98, 0.00,
     ]), decimals=5)).all()
     assert (np.round(cv_out["Evaluation"]["Summary"]["Scores"]["AUC"], decimals=5) == np.round(pd.Series([
         0.984, 0.009051, 0.9776, 0.9904, 0.00,
@@ -351,7 +350,7 @@ def test_nested_cross_validate_binary_classification(xy_binary_classification, L
             "Max_ J Threshold": np.array([[50, 0], [3, 47]])
         }
     }
-    for thresh in ["0_5 Threshold", "High Specificity Threshold", "Max_ J Threshold"]:
+    for thresh in ["High Specificity Threshold", "Max_ J Threshold", "0_5 Threshold"]:
         np.testing.assert_almost_equal(
             cv_out["Evaluation"]["Summary"]["Confusion Matrices"].get(
                 f"Threshold Version.{thresh}"),
@@ -382,7 +381,7 @@ def test_nested_cross_validate_binary_classification(xy_binary_classification, L
             }
         }
     }
-    for thresh in ["0_5 Threshold", "High Specificity Threshold", "Max_ J Threshold"]:
+    for thresh in ["High Specificity Threshold", "Max_ J Threshold", "0_5 Threshold"]:
         for rep in range(num_reps):
             np.testing.assert_almost_equal(
                 cv_out["Evaluation"]["Evaluations"]["Confusion Matrices"].get(
@@ -392,13 +391,13 @@ def test_nested_cross_validate_binary_classification(xy_binary_classification, L
             )
 
     assert (cv_out["Evaluation"]["Evaluations"]["Scores"]["Accuracy"] == pd.Series(
-        [0.94, 0.96, 0.98, 0.96, 0.98, 0.96])).all()
+        [0.98, 0.96, 0.98, 0.96, 0.94, 0.96])).all()
     assert (cv_out["Evaluation"]["Evaluations"]["Scores"]["Repetition"] ==
             pd.Series([0, 1, 0, 1, 0, 1])).all()
     assert (cv_out["Evaluation"]["Evaluations"]["Scores"]['Threshold Version'] == pd.Series([
-        "0.5 Threshold", "0.5 Threshold",
         "Max. J Threshold", "Max. J Threshold",
         "High Specificity Threshold", "High Specificity Threshold",
+        "0.5 Threshold", "0.5 Threshold",
     ])).all()
     assert (cv_out["Evaluation"]["Evaluations"]["Scores"]["Positive Class"]
             == pd.Series([1, 1, 1, 1, 1, 1])).all()
@@ -502,10 +501,10 @@ def test_nested_cross_validate_rf_binary_classification(xy_binary_classification
 
     assert cv_out["Evaluation"]["Summary"]["What"] == "Evaluation summaries from binary classification."
     assert (cv_out["Evaluation"]["Summary"]["Scores"]['Threshold Version'] == pd.Series([
-        "0.5 Threshold", "0.5 Threshold", "0.5 Threshold", "0.5 Threshold", "0.5 Threshold",
         "Max. J Threshold", "Max. J Threshold", "Max. J Threshold", "Max. J Threshold", "Max. J Threshold",
         "High Specificity Threshold", "High Specificity Threshold", "High Specificity Threshold",
         "High Specificity Threshold", "High Specificity Threshold",
+        "0.5 Threshold", "0.5 Threshold", "0.5 Threshold", "0.5 Threshold", "0.5 Threshold",
     ])).all()
     assert (cv_out["Evaluation"]["Summary"]["Scores"]['Measure'] == pd.Series([
         "Average", "SD", "Min", "Max", "# NaNs",
@@ -513,9 +512,9 @@ def test_nested_cross_validate_rf_binary_classification(xy_binary_classification
         "Average", "SD", "Min", "Max", "# NaNs",
     ])).all()
     assert (np.round(cv_out["Evaluation"]["Summary"]["Scores"]["Accuracy"], decimals=5) == np.round(pd.Series([
-        0.94, 0.028284, 0.92, 0.96, 0.00,
         0.96, 0.028284, 0.94, 0.98, 0.00,
-        0.96, 0.028284, 0.94, 0.98, 0.00
+        0.96, 0.028284, 0.94, 0.98, 0.00,
+        0.94, 0.028284, 0.92, 0.96, 0.00,
     ]), decimals=5)).all()
 
     
@@ -532,7 +531,7 @@ def test_nested_cross_validate_svm_binary_classification(xy_binary_classificatio
 
     x = xy_binary_classification["x"]
     y = xy_binary_classification["y"]
-    num_samples = xy_binary_classification["num_samples"]
+    # num_samples = xy_binary_classification["num_samples"]
 
     # Init model object
     model = SVMClassifierPartial["model"](random_state=seed)
@@ -556,10 +555,10 @@ def test_nested_cross_validate_svm_binary_classification(xy_binary_classificatio
 
     assert cv_out["Evaluation"]["Summary"]["What"] == "Evaluation summaries from binary classification."
     assert (cv_out["Evaluation"]["Summary"]["Scores"]['Threshold Version'] == pd.Series([
-        "0.5 Threshold", "0.5 Threshold", "0.5 Threshold", "0.5 Threshold", "0.5 Threshold",
         "Max. J Threshold", "Max. J Threshold", "Max. J Threshold", "Max. J Threshold", "Max. J Threshold",
         "High Specificity Threshold", "High Specificity Threshold", "High Specificity Threshold",
         "High Specificity Threshold", "High Specificity Threshold",
+        "0.5 Threshold", "0.5 Threshold", "0.5 Threshold", "0.5 Threshold", "0.5 Threshold",
     ])).all()
     assert (cv_out["Evaluation"]["Summary"]["Scores"]['Measure'] == pd.Series([
         "Average", "SD", "Min", "Max", "# NaNs",
@@ -939,7 +938,7 @@ def test_nested_cross_validate_binary_classification_with_pca(xy_binary_classifi
 
     x = xy_binary_classification_xl["x"]
     y = xy_binary_classification_xl["y"]
-    num_samples = xy_binary_classification_xl["num_samples"]
+    # num_samples = xy_binary_classification_xl["num_samples"]
     num_reps = 2
 
     # Init model object
@@ -991,9 +990,9 @@ def test_nested_cross_validate_binary_classification_with_pca(xy_binary_classifi
     # Test that the PCA was applied the same way (at least that the same metrics were calculated)
     # print(cv_out_with_pca["Evaluation"]["Summary"]["Scores"]["Accuracy"])
     np.testing.assert_almost_equal(cv_out_with_pca["Evaluation"]["Summary"]["Scores"]["Accuracy"], [
-        0.983333,0.004714,0.980000,0.986667,0.000000,
         0.993333,0.009428,0.986667,1.000000,0.000000,
-        0.993333,0.009428,0.986667,1.000000,0.000000
+        0.993333,0.009428,0.986667,1.000000,0.000000,
+        0.983333,0.004714,0.980000,0.986667,0.000000,
     ], decimal=4)
 
 
@@ -1055,9 +1054,9 @@ def test_nested_cross_validate_binary_classification_with_groups(xy_binary_class
     assert_array_almost_equal(
         initial_bal_acc,
         [  
-            0.9671857619577309, 0.0, 0.9671857619577309, 0.9671857619577309, 0.0, 
             0.9758064516129032, 0.0, 0.9758064516129032, 0.9758064516129032, 0.0, 
-            0.9709399332591769, 0.006095748113677107, 0.9666295884315907, 0.9752502780867631, 0.0
+            0.9709399332591769, 0.006095748113677107, 0.9666295884315907, 0.9752502780867631, 0.0,
+            0.9671857619577309, 0.0, 0.9671857619577309, 0.9671857619577309, 0.0, 
         ]
     )
 
@@ -1178,7 +1177,7 @@ def test_nested_cross_validate_binary_classification_train_only_paths(xy_binary_
     y = xy_binary_classification_xl["y"]
     num_samples = xy_binary_classification_xl["num_samples"]
 
-    num_reps = 2
+    #num_reps = 2
 
     # Set train_only groups
     groups = np.sort(np.concatenate([np.arange(num_samples // 3) for _ in range(3)]))
@@ -1201,7 +1200,7 @@ def test_nested_cross_validate_binary_classification_train_only_paths(xy_binary_
 
     seed = 15
 
-    cv_out = nested_cross_validate(
+    cv_out = nested_cross_validate(  # noqa: F841
         x=x, y=y, model=model, grid=grid, groups=groups,
         positive=1, k_inner=2, k_outer=2, reps=1, # k_inner=3, k_outer=3,
         eval_by_split=False, inner_metric='balanced_accuracy',
@@ -1261,7 +1260,7 @@ def test_nested_cross_validate_binary_classification_splits_train_only_groups_pa
     y = xy_binary_classification_xl["y"]
     num_samples = xy_binary_classification_xl["num_samples"]
 
-    num_reps = 2
+    # num_reps = 2
 
     splits = np.sort(create_splits_fn(num_samples=num_samples, num_splits=5, id_names=["train_only(-1)", "ts2", "ts3", "ts4", "ts5"])) # Weird split names are for maintaining order
     groups = np.sort(np.concatenate([np.arange(num_samples // 3) for _ in range(3)]))
@@ -1290,7 +1289,7 @@ def test_nested_cross_validate_binary_classification_splits_train_only_groups_pa
 
     seed = 15
 
-    cv_out = nested_cross_validate(
+    cv_out = nested_cross_validate(  # noqa: F841
         x=x, y=y, model=model, grid=grid, groups=groups,
         positive=1, k_inner=2, reps=1, outer_split=splits,
         eval_by_split=False, inner_metric='balanced_accuracy',
@@ -1441,7 +1440,7 @@ def test_nested_cross_validate_binary_classification_weighting_per_split(xy_bina
     assert any(cv_out_1["Outer Predictions"][0] != cv_out_2["Outer Predictions"][0])
     # Test that predictions differ for models with per-split weighting
     assert any(cv_out_1["Outer Predictions"][0] != cv_out_3["Outer Predictions"][0])
-    assert_array_almost_equal(cv_out_1["Outer Predictions"][0][:6], np.asarray([0.99940634, 0.93594605, 0.06628229, 0.08877924, 0.06218732, 0.998869]))
+    assert_array_almost_equal(cv_out_1["Outer Predictions"][0][:6], np.asarray([0.06628229, 0.08877924, 0.06218732, 0.998869, 0.99940634, 0.93594605]))
     assert_array_almost_equal(cv_out_2["Outer Predictions"][0][:6], np.asarray([0.99940139, 0.93667513, 0.06915096, 0.07947106, 0.05905978, 0.998629]))
     assert_array_almost_equal(cv_out_3["Outer Predictions"][0][:6], np.asarray([0.9994131,  0.93834025, 0.06838495, 0.09622831, 0.06066705, 0.9988845]))
 

@@ -334,11 +334,6 @@ def test_regular_cross_validate_binary_classification(
         cv_out["Evaluation"]["Summary"]["Scores"]["Threshold Version"]
         == pd.Series(
             [
-                "0.5 Threshold",
-                "0.5 Threshold",
-                "0.5 Threshold",
-                "0.5 Threshold",
-                "0.5 Threshold",
                 "Max. J Threshold",
                 "Max. J Threshold",
                 "Max. J Threshold",
@@ -349,6 +344,11 @@ def test_regular_cross_validate_binary_classification(
                 "High Specificity Threshold",
                 "High Specificity Threshold",
                 "High Specificity Threshold",
+                "0.5 Threshold",
+                "0.5 Threshold",
+                "0.5 Threshold",
+                "0.5 Threshold",
+                "0.5 Threshold",
             ]
         )
     ).all()
@@ -380,21 +380,21 @@ def test_regular_cross_validate_binary_classification(
         == np.round(
             pd.Series(
                 [
+                    0.96,
+                    0.00,
+                    0.96,
+                    0.96,
+                    0.00,
+                    0.96,
+                    0.00,
+                    0.96,
+                    0.96,
+                    0.00,
                     0.94,
                     0.00,
                     0.94,
                     0.94,
                     0.000000,
-                    0.96,
-                    0.00,
-                    0.96,
-                    0.96,
-                    0.00,
-                    0.96,
-                    0.00,
-                    0.96,
-                    0.96,
-                    0.00,
                 ]
             ),
             decimals=5,
@@ -411,15 +411,15 @@ def test_regular_cross_validate_binary_classification(
                     0.98560,
                     0.98720,
                     0.00,
-                    0.98640,
-                    0.00113,
-                    0.98560,
-                    0.98720,
-                    0.00,
                     0.9864,
                     0.00113,
                     0.9856,
                     0.9872,
+                    0.00,
+                    0.98640,
+                    0.00113,
+                    0.98560,
+                    0.98720,
                     0.00,
                 ]
             ),
@@ -431,12 +431,12 @@ def test_regular_cross_validate_binary_classification(
     # print(cv_out["Evaluation"]["Summary"]["Confusion Matrices"])
     expected_conf_mats = {
         "Threshold Version": {
-            "0_5 Threshold": np.array([[46, 4], [2, 48]]),
             "High Specificity Threshold": np.array([[48, 2], [2, 48]]),
             "Max_ J Threshold": np.array([[49, 1], [3, 47]]),
+            "0_5 Threshold": np.array([[46, 4], [2, 48]]),
         }
     }
-    for thresh in ["0_5 Threshold", "High Specificity Threshold", "Max_ J Threshold"]:
+    for thresh in ["High Specificity Threshold", "Max_ J Threshold", "0_5 Threshold"]:
         # print(cv_out["Evaluation"]["Summary"]["Confusion Matrices"].get(
         #         f"Threshold Version.{thresh}"
         #     ))
@@ -460,14 +460,14 @@ def test_regular_cross_validate_binary_classification(
     # print(cv_out["Evaluation"]["Evaluations"]['Confusion Matrices'])
     expected_conf_mats = {
         "Threshold Version": {
-            "0_5 Threshold": {
-                "Repetition": {"0": [[23, 2], [1, 24]], "1": [[23, 2], [1, 24]]}
-            },
             "High Specificity Threshold": {
                 "Repetition": {"0": [[24, 1], [1, 24]], "1": [[24, 1], [1, 24]]}
             },
             "Max_ J Threshold": {
                 "Repetition": {"0": [[24, 1], [1, 24]], "1": [[25, 0], [2, 23]]}
+            },
+            "0_5 Threshold": {
+                "Repetition": {"0": [[23, 2], [1, 24]], "1": [[23, 2], [1, 24]]}
             },
         }
     }
@@ -486,7 +486,7 @@ def test_regular_cross_validate_binary_classification(
     print(cv_out["Evaluation"]["Evaluations"]["Scores"]["Accuracy"])
     assert (
         cv_out["Evaluation"]["Evaluations"]["Scores"]["Accuracy"]
-        == pd.Series([0.94, 0.94, 0.96, 0.96, 0.96, 0.96])
+        == pd.Series([0.96, 0.96, 0.96, 0.96, 0.94, 0.94])
     ).all()
     print(cv_out["Evaluation"]["Evaluations"]["Scores"]["Repetition"])
     assert (
@@ -497,12 +497,12 @@ def test_regular_cross_validate_binary_classification(
         cv_out["Evaluation"]["Evaluations"]["Scores"]["Threshold Version"]
         == pd.Series(
             [
-                "0.5 Threshold",
-                "0.5 Threshold",
                 "Max. J Threshold",
                 "Max. J Threshold",
                 "High Specificity Threshold",
                 "High Specificity Threshold",
+                "0.5 Threshold",
+                "0.5 Threshold",
             ]
         )
     ).all()
@@ -687,11 +687,6 @@ def test_regular_cross_validate_rf_binary_classification(
         cv_out["Evaluation"]["Summary"]["Scores"]["Threshold Version"]
         == pd.Series(
             [
-                "0.5 Threshold",
-                "0.5 Threshold",
-                "0.5 Threshold",
-                "0.5 Threshold",
-                "0.5 Threshold",
                 "Max. J Threshold",
                 "Max. J Threshold",
                 "Max. J Threshold",
@@ -702,6 +697,11 @@ def test_regular_cross_validate_rf_binary_classification(
                 "High Specificity Threshold",
                 "High Specificity Threshold",
                 "High Specificity Threshold",
+                "0.5 Threshold",
+                "0.5 Threshold",
+                "0.5 Threshold",
+                "0.5 Threshold",
+                "0.5 Threshold",
             ]
         )
     ).all()
@@ -733,20 +733,20 @@ def test_regular_cross_validate_rf_binary_classification(
         == np.round(
             pd.Series(
                 [
+                    0.96,
+                    0.028284,
+                    0.94,
+                    0.98,
+                    0.00,
+                    0.96,
+                    0.028284,
+                    0.94,
+                    0.98,
+                    0.00,
                     0.94,
                     0.028284,
                     0.92,
                     0.96,
-                    0.00,
-                    0.96,
-                    0.028284,
-                    0.94,
-                    0.98,
-                    0.00,
-                    0.96,
-                    0.028284,
-                    0.94,
-                    0.98,
                     0.00,
                 ]
             ),
@@ -806,11 +806,6 @@ def test_regular_cross_validate_rf_binary_classification(
 #         cv_out["Evaluation"]["Summary"]["Scores"]["Threshold Version"]
 #         == pd.Series(
 #             [
-#                 "0.5 Threshold",
-#                 "0.5 Threshold",
-#                 "0.5 Threshold",
-#                 "0.5 Threshold",
-#                 "0.5 Threshold",
 #                 "Max. J Threshold",
 #                 "Max. J Threshold",
 #                 "Max. J Threshold",
@@ -821,6 +816,11 @@ def test_regular_cross_validate_rf_binary_classification(
 #                 "High Specificity Threshold",
 #                 "High Specificity Threshold",
 #                 "High Specificity Threshold",
+#                 "0.5 Threshold",
+#                 "0.5 Threshold",
+#                 "0.5 Threshold",
+#                 "0.5 Threshold",
+#                 "0.5 Threshold",
 #             ]
 #         )
 #     ).all()
@@ -947,11 +947,6 @@ def test_regular_cross_validate_rf_binary_classification(
 #         cv_out["Evaluation"]["Summary"]["Scores"]["Threshold Version"]
 #         == pd.Series(
 #             [
-#                 "0.5 Threshold",
-#                 "0.5 Threshold",
-#                 "0.5 Threshold",
-#                 "0.5 Threshold",
-#                 "0.5 Threshold",
 #                 "Max. J Threshold",
 #                 "Max. J Threshold",
 #                 "Max. J Threshold",
@@ -962,6 +957,11 @@ def test_regular_cross_validate_rf_binary_classification(
 #                 "High Specificity Threshold",
 #                 "High Specificity Threshold",
 #                 "High Specificity Threshold",
+#                 "0.5 Threshold",
+#                 "0.5 Threshold",
+#                 "0.5 Threshold",
+#                 "0.5 Threshold",
+#                 "0.5 Threshold",
 #             ]
 #         )
 #     ).all()
@@ -1102,12 +1102,12 @@ def test_regular_cross_validate_rf_binary_classification(
 #         cv_out["Evaluation"]["Evaluations"]["Scores"]["Threshold Version"]
 #         == pd.Series(
 #             [
-#                 "0.5 Threshold",
-#                 "0.5 Threshold",
 #                 "Max. J Threshold",
 #                 "Max. J Threshold",
 #                 "High Specificity Threshold",
 #                 "High Specificity Threshold",
+#                 "0.5 Threshold",
+#                 "0.5 Threshold",
 #             ]
 #         )
 #     ).all()
@@ -1514,11 +1514,6 @@ def test_regular_cross_validate_binary_classification_by_splits(
         cv_out["Evaluation"]["Summary"]["Scores"]["Threshold Version"]
         == pd.Series(
             [
-                "0.5 Threshold",
-                "0.5 Threshold",
-                "0.5 Threshold",
-                "0.5 Threshold",
-                "0.5 Threshold",
                 "Max. J Threshold",
                 "Max. J Threshold",
                 "Max. J Threshold",
@@ -1529,6 +1524,11 @@ def test_regular_cross_validate_binary_classification_by_splits(
                 "High Specificity Threshold",
                 "High Specificity Threshold",
                 "High Specificity Threshold",
+                "0.5 Threshold",
+                "0.5 Threshold",
+                "0.5 Threshold",
+                "0.5 Threshold",
+                "0.5 Threshold",
             ]
         )
     ).all()
@@ -1667,12 +1667,12 @@ def test_regular_cross_validate_binary_classification_by_splits(
         cv_out["Evaluation"]["Evaluations"]["Scores"]["Threshold Version"]
         == pd.Series(
             [
-                "0.5 Threshold",
-                "0.5 Threshold",
                 "Max. J Threshold",
                 "Max. J Threshold",
                 "High Specificity Threshold",
                 "High Specificity Threshold",
+                "0.5 Threshold",
+                "0.5 Threshold",
             ]
         )
     ).all()
@@ -1985,11 +1985,6 @@ def test_regular_cross_validate_binary_classification_with_groups(
     assert_array_almost_equal(
         initial_bal_acc,
         [
-            0.9628754171301447,
-            0.006095748113677107,
-            0.9585650723025585,
-            0.9671857619577309,
-            0.0,
             0.9758064516129032,
             0.0,
             0.9758064516129032,
@@ -1999,6 +1994,11 @@ def test_regular_cross_validate_binary_classification_with_groups(
             0.00039327407185011564,
             0.9752502780867631,
             0.9758064516129032,
+            0.0,
+            0.9628754171301447,
+            0.006095748113677107,
+            0.9585650723025585,
+            0.9671857619577309,
             0.0,
         ],
     )
@@ -2075,11 +2075,6 @@ def test_regular_cross_validate_binary_classification_with_groups(
     assert_array_almost_equal(
         cv_out["Evaluation"]["Summary"]["Scores"]["Balanced Accuracy"],
         [
-            0.7416879795396419,
-            0.0054253717226589475,
-            0.7378516624040921,
-            0.7455242966751918,
-            0.0,
             0.7672634271099744,
             0.0,
             0.7672634271099744,
@@ -2089,6 +2084,11 @@ def test_regular_cross_validate_binary_classification_with_groups(
             0.015371886547533593,
             0.6521739130434783,
             0.6739130434782609,
+            0.0,
+            0.7416879795396419,
+            0.0054253717226589475,
+            0.7378516624040921,
+            0.7455242966751918,
             0.0,
         ],
     )
@@ -2345,7 +2345,6 @@ def test_regular_cross_validate_binary_classification_weighting_per_split(
     UnbalancedLogisticRegressionClassifierPartial,
     create_splits_fn,
 ):
-
     # Unit tests to check the expected number of elements
     # in the output when adding groups with some train_only indicators
 
@@ -2500,7 +2499,6 @@ def test_regular_cross_validate_binary_classification_weighting_per_split(
     # Note: Fails on purpose
     test_sample_weights = False
     if test_sample_weights:
-
         print("\nLabel imbalances: ")
         print(
             "  NOTE: Sample weights are normalized in pipeline so these won't match completely but be somewhat close"
