@@ -460,6 +460,7 @@ def train_full_model(
 
     return {
         "Estimator": best_estimator,
+        "CV Results": estimator.cv_results_,
         "Evaluation": evaluation,
         "Predictions": predictions,
         "Targets": y_test,
