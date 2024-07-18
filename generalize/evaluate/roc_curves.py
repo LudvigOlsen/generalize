@@ -624,7 +624,7 @@ class ROCCurves:
     def get_average_roc_curves(
         self,
         paths: List[str],
-        num_points: int = 1000,
+        num_points: int = 1001,
         weights: Optional[List[float]] = None,
     ) -> ROCCurve:
         """
@@ -657,7 +657,7 @@ class ROCCurves:
     @staticmethod
     def average_roc_curves(
         roc_dict: Dict[str, ROCCurve],
-        num_points: int = 1000,
+        num_points: int = 1001,
         weights: Optional[Dict[str, float]] = None,
     ) -> ROCCurve:
         """
