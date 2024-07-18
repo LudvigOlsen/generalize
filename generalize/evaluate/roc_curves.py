@@ -9,6 +9,7 @@ from typing import Callable, Dict, List, Optional, Union
 import numpy as np
 import numpy.typing as npt
 from sklearn.metrics import roc_auc_score, roc_curve
+from sklearn.metrics import auc as auc_from_xy
 from nattrs import nested_setattr, nested_hasattr, nested_getattr, nested_mutattr
 
 from generalize.evaluate.confusion_matrices import _dict_to_str
@@ -619,6 +620,87 @@ class ROCCurves:
             new_collection.paths += [coll_prefix + "." + path for path in coll.paths]
 
         return new_collection
+
+    def get_average_roc_curves(
+        self,
+        paths: List[str],
+        num_points: int = 1000,
+        weights: Optional[List[float]] = None,
+    ) -> ROCCurve:
+        """
+        Get the average ROC curves for a given set of paths.
+
+        Uses linear interpolation and vertical (weighted) averaging.
+        """
+        if weights is not None and len(weights) != len(paths):
+            raise ValueError(
+                "When supplying `weights`, there must be exactly one weight per path."
+            )
+
+        # Create ROC dict
+        rocs = {path: self.get(path) for path in paths}
+
+        # Create weights dict
+        weights = (
+            None
+            if weights is None
+            else {path: weight for path, weight in zip(paths, weights)}
+        )
+
+        # Calculate average ROC curves
+        return ROCCurves.average_roc_curves(
+            rocs,
+            num_points=num_points,
+            weights=weights,
+        )
+
+    @staticmethod
+    def average_roc_curves(
+        roc_dict: Dict[str, ROCCurve],
+        num_points: int = 1000,
+        weights: Optional[Dict[str, float]] = None,
+    ) -> ROCCurve:
+        """
+        Average a set of ROC curves using linear interpolation and
+        vertical (weighted) averaging.
+        """
+        # Define a common set of thresholds (equally spaced)
+        common_thresholds = np.linspace(0, 1, num_points)
+
+        # Initialize lists to hold interpolated TPR and FPR values
+        tpr_interp_list = []
+        fpr_interp_list = []
+
+        # Extract weights or use uniform weights if not provided
+        if weights is None:
+            weights = np.ones(len(roc_dict))
+        else:
+            # Ensure order and convert to array
+            weights = np.array([weights[curve_name] for curve_name in roc_dict.keys()])
+            # Normalize weights to mean=1
+            weights /= np.mean(weights)
+
+        for roc_, weight in zip(roc_dict.values(), weights):
+            # Interpolate TPR and FPR at common thresholds
+            interp_tpr = np.interp(
+                common_thresholds, roc_.thresholds[::-1], roc_.tpr[::-1]
+            )
+            interp_fpr = np.interp(
+                common_thresholds, roc_.thresholds[::-1], roc_.fpr[::-1]
+            )
+            tpr_interp_list.append(interp_tpr * weight)
+            fpr_interp_list.append(interp_fpr * weight)
+
+        # Calculate the weighted average TPR and FPR
+        mean_tpr = np.sum(tpr_interp_list, axis=0) / np.sum(weights)
+        mean_fpr = np.sum(fpr_interp_list, axis=0) / np.sum(weights)
+
+        # Calculate the mean AUC
+        mean_auc = auc_from_xy(mean_fpr, mean_tpr)
+
+        return ROCCurve(
+            fpr=mean_fpr, tpr=mean_tpr, thresholds=common_thresholds, auc=mean_auc
+        )
 
     def to_dict(self, copy: bool = True) -> dict:
         """
