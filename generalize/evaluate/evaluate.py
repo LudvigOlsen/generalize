@@ -662,7 +662,12 @@ class Evaluator:
             rep_indices, warning_counts = np.unique(
                 warnings_df[eval_idx_colname], return_counts=True
             )
-            combined_evaluations["Scores"].loc[:, "Num Warnings"] = 0
+            
+            # Add number of warnings (without chained assignment warning)
+            scores = combined_evaluations["Scores"]
+            scores.loc[:, "Num Warnings"] = 0
+            combined_evaluations["Scores"] = scores
+
             for rep_idx, num_warns in zip(rep_indices, warning_counts):
                 # NOTE: We may have multiple threshold versions
                 # So we need to assign the counts in every row with a
