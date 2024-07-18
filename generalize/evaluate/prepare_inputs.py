@@ -64,7 +64,7 @@ class BinaryPreparer:
 
             assert probabilities.ndim <= 2
             if probabilities.ndim == 2:
-                if not probabilities.shape[1] in [1, 2]:
+                if probabilities.shape[1] not in [1, 2]:
                     raise ValueError(
                         (
                             "Second dimension of `probabilities` must have size "

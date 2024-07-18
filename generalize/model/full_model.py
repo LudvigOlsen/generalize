@@ -463,8 +463,8 @@ def train_full_model(
         evaluation["ROC"].add(
             path="Overall",
             roc_curve=ROCCurve.from_data(
-                targets=predictions["Target"].to_numpy().astype(np.int64),
-                predicted_probabilities=predictions["Prediction"].to_numpy().astype(np.float64),
+                targets=y_test,
+                predicted_probabilities=predictions,
                 positive=1,
             ),
         )
