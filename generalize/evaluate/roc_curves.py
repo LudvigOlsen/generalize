@@ -5,7 +5,7 @@ For handling a collection of ROC curves.
 import json
 import pathlib
 import copy
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Union, Tuple
 import numpy as np
 import numpy.typing as npt
 from sklearn.metrics import roc_auc_score, roc_curve
@@ -168,6 +168,75 @@ class ROCCurve:
             tpr=np.asarray(curve_dict["TPR"], dtype=dtype),
             thresholds=np.asarray(curve_dict["Thresholds"], dtype=dtype),
             auc=curve_dict.get("AUC", None),
+        )
+
+    def __sub__(self, other) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Subtract a ROC curve (TPR and FPR separately) from another.
+        Applied linear interpolation to both curves and
+        subtracts `other.fpr` from `self.fpr` and
+        `other.tpr` from `self.tpr`.
+
+        The outputs can be used to plot the difference
+        in expected FPR and TPR at given thresholds
+        for two ROC curves.
+
+        Parameters
+        ----------
+        other: ROCCurve
+            ROC curve to subtract from `self`.
+
+        Returns
+        -------
+        numpy.ndarray
+            Differences in False Positive Rates
+            I.e. `other.fpr - self.fpr` after interpolation.
+        numpy.ndarray
+            Differences in True Positive Rates
+            I.e. `other.tpr - self.tpr` after interpolation.
+        numpy.ndarray
+            Thresholds used for interpolation.
+            Defined as `np.linspace(0, 1, 1001)`.
+        """
+        num_points = 1001
+        interpolated_roc_1 = self.interpolate(num_points=num_points)
+        interpolated_roc_2 = other.interpolate(num_points=num_points)
+
+        tpr_diff = interpolated_roc_1.tpr - interpolated_roc_2.tpr
+        fpr_diff = interpolated_roc_1.fpr - interpolated_roc_2.fpr
+        return fpr_diff, tpr_diff, interpolated_roc_1.thresholds
+
+    def interpolate(
+        self,
+        num_points: int = 1001,
+    ):
+        """
+        Apply linear interpolation.
+
+        Returns
+        -------
+        ROCCurve
+            A `ROCCurve` object with interpolated values.
+        """
+        # Define a common set of thresholds (equally spaced)
+        thresholds = np.linspace(0, 1, num_points)
+
+        # Interpolate TPR and FPR at common thresholds
+        interpolated_tpr = np.interp(
+            thresholds, roc_curve.thresholds[::-1], roc_curve.tpr[::-1]
+        )[::-1]
+        interpolated_fpr = np.interp(
+            thresholds, roc_curve.thresholds[::-1], roc_curve.fpr[::-1]
+        )[::-1]
+
+        # Calculate the mean AUC
+        interpolated_auc = auc_from_xy(interpolated_fpr, interpolated_tpr)
+
+        return ROCCurve(
+            fpr=interpolated_fpr,
+            tpr=interpolated_tpr,
+            thresholds=thresholds[::-1],
+            auc=interpolated_auc,
         )
 
     def __copy__(self):
@@ -677,12 +746,10 @@ class ROCCurves:
         Average a set of ROC curves using linear interpolation and
         vertical (weighted) averaging.
         """
-        # Define a common set of thresholds (equally spaced)
-        common_thresholds = np.linspace(0, 1, num_points)
-
         # Initialize lists to hold interpolated TPR and FPR values
         tpr_interp_list = []
         fpr_interp_list = []
+        common_thresholds = None
 
         # Extract weights or use uniform weights if not provided
         if weights is None:
@@ -694,15 +761,13 @@ class ROCCurves:
             weights /= np.mean(weights)
 
         for roc_, weight in zip(roc_dict.values(), weights):
-            # Interpolate TPR and FPR at common thresholds
-            interp_tpr = np.interp(
-                common_thresholds, roc_.thresholds[::-1], roc_.tpr[::-1]
-            )
-            interp_fpr = np.interp(
-                common_thresholds, roc_.thresholds[::-1], roc_.fpr[::-1]
-            )
-            tpr_interp_list.append(interp_tpr * weight)
-            fpr_interp_list.append(interp_fpr * weight)
+            interpolated_roc = roc_.interpolate(num_points=num_points)
+
+            tpr_interp_list.append(interpolated_roc.tpr * weight)
+            fpr_interp_list.append(interpolated_roc.fpr * weight)
+
+            if common_thresholds is None:
+                common_thresholds = interpolated_roc.thresholds
 
         # Calculate the weighted average TPR and FPR
         mean_tpr = np.sum(tpr_interp_list, axis=0) / np.sum(weights)
@@ -713,9 +778,9 @@ class ROCCurves:
 
         # Reverse arrays to be consistent with rest of ROC Curves
         return ROCCurve(
-            fpr=mean_fpr[::-1],
-            tpr=mean_tpr[::-1],
-            thresholds=common_thresholds[::-1],
+            fpr=mean_fpr,
+            tpr=mean_tpr,
+            thresholds=common_thresholds,
             auc=mean_auc,
         )
 
