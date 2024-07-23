@@ -5,7 +5,8 @@ For handling a collection of ROC curves.
 import json
 import pathlib
 import copy
-from typing import Callable, Dict, List, Optional, Union, Tuple
+from typing import Callable, Dict, List, Optional, Union
+from dataclasses import dataclass
 import numpy as np
 import numpy.typing as npt
 from sklearn.metrics import roc_auc_score, roc_curve
@@ -16,6 +17,36 @@ from generalize.evaluate.confusion_matrices import _dict_to_str
 from generalize.evaluate.prepare_inputs import BinaryPreparer
 
 # TODO: Add method for finding threshold given a sensitivity
+
+
+@dataclass
+class ROCCurveDifferences:
+    """
+    Differences between two `ROCCurve` objects.
+
+    Parameters
+    ----------
+    fpr_diff
+        numpy.ndarray
+            Differences in False Positive Rates
+            I.e. `other.fpr - self.fpr` after interpolation.
+    tpr_diff
+        numpy.ndarray
+            Differences in True Positive Rates
+            I.e. `other.tpr - self.tpr` after interpolation.
+    thresholds
+        numpy.ndarray
+            Thresholds used for interpolation.
+            Defined as `np.linspace(0, 1, 1001)`.
+    auc_diff
+        float or None
+            Difference in AUC scores
+    """
+
+    fpr_diff: float
+    tpr_diff: float
+    thresholds: np.ndarray
+    auc_diff: float
 
 
 class ROCCurve:
@@ -57,6 +88,14 @@ class ROCCurve:
             raise ValueError("`tpr` must be sorted in ascending order.")
         if not ROCCurve._check_array_order(thresholds, desc=True):
             raise ValueError("`thresholds` must be sorted in descending order.")
+
+    def recalculate_auc(self):
+        """
+        Calculates AUC from `fpr` and `tpr` with `from sklearn.metrics import auc`.
+        Overwrites the `self.auc` attribute.
+        """
+        self.auc = auc_from_xy(self.fpr, self.tpr)
+        return self
 
     @staticmethod
     def _check_array_order(x, desc: bool = False) -> bool:
@@ -170,7 +209,7 @@ class ROCCurve:
             auc=curve_dict.get("AUC", None),
         )
 
-    def __sub__(self, other) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def __sub__(self, other) -> ROCCurveDifferences:
         """
         Subtract a ROC curve (TPR and FPR separately) from another.
         Applied linear interpolation to both curves and
@@ -188,23 +227,35 @@ class ROCCurve:
 
         Returns
         -------
-        numpy.ndarray
-            Differences in False Positive Rates
-            I.e. `other.fpr - self.fpr` after interpolation.
-        numpy.ndarray
-            Differences in True Positive Rates
-            I.e. `other.tpr - self.tpr` after interpolation.
-        numpy.ndarray
-            Thresholds used for interpolation.
-            Defined as `np.linspace(0, 1, 1001)`.
+        ROCCurveDifferences
+            With:
+                numpy.ndarray
+                    Differences in False Positive Rates
+                    I.e. `other.fpr - self.fpr` after interpolation.
+                numpy.ndarray
+                    Differences in True Positive Rates
+                    I.e. `other.tpr - self.tpr` after interpolation.
+                numpy.ndarray
+                    Thresholds used for interpolation.
+                    Defined as `np.linspace(0, 1, 1001)`.
+                float or None
+                    Difference in AUC scores
+
         """
         num_points = 1001
         interpolated_roc_1 = self.interpolate(num_points=num_points)
         interpolated_roc_2 = other.interpolate(num_points=num_points)
 
-        tpr_diff = interpolated_roc_1.tpr - interpolated_roc_2.tpr
-        fpr_diff = interpolated_roc_1.fpr - interpolated_roc_2.fpr
-        return fpr_diff, tpr_diff, interpolated_roc_1.thresholds
+        auc_diff = None
+        if self.auc is not None and other.auc is not None:
+            auc_diff = self.auc - other.auc
+
+        return ROCCurveDifferences(
+            fpr_diff=interpolated_roc_1.fpr - interpolated_roc_2.fpr,
+            tpr_diff=interpolated_roc_1.tpr - interpolated_roc_2.tpr,
+            thresholds=interpolated_roc_1.thresholds,
+            auc_diff=auc_diff,
+        )
 
     def interpolate(
         self,
@@ -222,12 +273,12 @@ class ROCCurve:
         thresholds = np.linspace(0, 1, num_points)
 
         # Interpolate TPR and FPR at common thresholds
-        interpolated_tpr = np.interp(
-            thresholds, roc_curve.thresholds[::-1], roc_curve.tpr[::-1]
-        )[::-1]
-        interpolated_fpr = np.interp(
-            thresholds, roc_curve.thresholds[::-1], roc_curve.fpr[::-1]
-        )[::-1]
+        interpolated_tpr = np.interp(thresholds, self.thresholds[::-1], self.tpr[::-1])[
+            ::-1
+        ]
+        interpolated_fpr = np.interp(thresholds, self.thresholds[::-1], self.fpr[::-1])[
+            ::-1
+        ]
 
         # Calculate the mean AUC
         interpolated_auc = auc_from_xy(interpolated_fpr, interpolated_tpr)
