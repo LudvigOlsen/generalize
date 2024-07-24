@@ -309,7 +309,7 @@ class ROCCurve:
         elif reference == "tpr":
             interpolated_fpr = np.interp(to, self.tpr, self.fpr)
             interpolated_thresholds = np.interp(to, self.tpr, self.thresholds)
-            interpolated_auc = auc_from_xy(to, interpolated_fpr)
+            interpolated_auc = auc_from_xy(interpolated_fpr, to)
             return ROCCurve(
                 fpr=interpolated_fpr,
                 tpr=to,
