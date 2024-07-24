@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import pandas as pd
 
 from generalize.evaluate.roc_curves import ROCCurves, ROCCurve
 
@@ -189,7 +190,10 @@ def test_roc_curve_ops():
             )
 
     # Interpolation of ROC curve
-    roc_interpolated = roc_coll.get(f"rep.{0}.split.{0}").interpolate(num_points=40)
+    # relative to thresholds
+    roc_interpolated = roc_coll.get(f"rep.{0}.split.{0}").interpolate(
+        to=40, reference="thresholds"
+    )
     print(roc_interpolated.fpr)
     print(roc_interpolated.tpr)
     print(roc_interpolated.thresholds)
@@ -232,3 +236,88 @@ def test_roc_curve_ops():
     )
     np.testing.assert_almost_equal(rocs_diffs.auc_diff,  0.0557986, decimal=3)
     # fmt: on
+
+
+def test_roc_curve_interpolation():
+    labels = np.array([0, 0, 0, 0, 1, 1, 1, 1])
+    preds = np.array([0.3, 0.4, 0.7, 0.25, 0.8, 0.4, 0.7, 0.4])
+
+    roc = ROCCurve.from_data(
+        targets=labels, predicted_probabilities=preds
+    ).recalculate_auc()
+
+    np.testing.assert_almost_equal(roc.auc, 0.78125, decimal=3)
+
+    all_roc_dfs = []
+    all_rankings = []
+    references = ["fpr", "tpr", "thresholds"]
+    for interp_n in [5, 7, 11, 15, 19, 27, 37, 51]:
+        roc_dfs = []
+        for reference in references:
+            roc_interpolated = roc.interpolate(to=interp_n, reference=reference)
+            interp_df = pd.DataFrame(
+                {
+                    "Reference": reference,
+                    "Grid Size": interp_n,
+                    "FPR": roc_interpolated.fpr,
+                    "TPR": roc_interpolated.tpr,
+                    "Thresholds": roc_interpolated.thresholds,
+                    "AUC": roc_interpolated.auc,
+                    "Label": f"{reference} (area={roc_interpolated.auc})",
+                }
+            )
+            roc_dfs.append(interp_df)
+            all_roc_dfs.append(interp_df)
+
+        # Check lengths of data frames are correct
+        np.testing.assert_array_almost_equal(
+            [df.shape[0] for df in roc_dfs],
+            [interp_n for _ in references],
+        )
+
+        # Check how close the interpolated ROC AUCs are to the original AUC
+        # Order: "fpr", "tpr", "thresholds" (so fpr is closest)
+        abs_auc_diffs = [np.abs(roc.auc - df["AUC"].tolist()[0]) for df in roc_dfs]
+        all_rankings.append(np.argsort(abs_auc_diffs))
+    
+    # print(all_rankings)
+    np.testing.assert_array_almost_equal(
+        np.mean(all_rankings, axis=0), [0.5, 1.5, 1.], decimal=5
+    )
+
+    # Enable to check visually how well
+    # different interpolation references
+    # reproduce the original curve and AUC
+    if False:
+        import matplotlib.pyplot as plt
+
+        roc_df = pd.concat(all_roc_dfs)
+        roc_df = roc_df.loc[roc_df["Grid Size"].isin([5, 11, 19, 37])]
+
+        facet_col = "Grid Size"
+        facet_groups = roc_df[facet_col].unique()
+        num_facet_groups = len(facet_groups)
+
+        fig, axes = plt.subplots(num_facet_groups, 1, figsize=(10, 3.5 * num_facet_groups))
+        if num_facet_groups == 1:
+            axes = [axes]
+
+        for ax, (facet_group, data) in zip(axes, roc_df.groupby(facet_col)):
+            line_groups = data.groupby("Label")
+
+            for name, group in line_groups:
+                ax.plot(group["FPR"], group["TPR"], marker="o", linestyle="-", label=name)
+            ax.plot(roc.fpr, roc.tpr, label=f"Original (area = {roc.auc})")
+            ax.plot([0, 1], [0, 1], "k--", label="No Skill")
+
+            # Step 5: Customize the plot
+            ax.set_title(f"{facet_group}")
+            ax.set_xlabel("")
+            ax.set_ylabel("TPR")
+            ax.legend(title="Reference")
+            ax.set_xlim([0.0, 1.0])
+            ax.set_ylim([0.0, 1.05])
+
+        plt.show()
+
+    # assert False
