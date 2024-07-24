@@ -6,7 +6,8 @@ import json
 import pathlib
 import copy
 from typing import Callable, Dict, List, Optional, Union
-from dataclasses import dataclass
+
+# from dataclasses import dataclass
 import numpy as np
 import numpy.typing as npt
 from sklearn.metrics import roc_auc_score, roc_curve
@@ -19,34 +20,34 @@ from generalize.evaluate.prepare_inputs import BinaryPreparer
 # TODO: Add method for finding threshold given a sensitivity
 
 
-@dataclass
-class ROCCurveDifferences:
-    """
-    Differences between two `ROCCurve` objects.
+# @dataclass
+# class ROCCurveDifferences:
+#     """
+#     Differences between two `ROCCurve` objects.
 
-    Parameters
-    ----------
-    fpr_diff
-        numpy.ndarray
-            Differences in False Positive Rates
-            I.e. `other.fpr - self.fpr` after interpolation.
-    tpr_diff
-        numpy.ndarray
-            Differences in True Positive Rates
-            I.e. `other.tpr - self.tpr` after interpolation.
-    thresholds
-        numpy.ndarray
-            Thresholds used for interpolation.
-            Defined as `np.linspace(0, 1, 1001)`.
-    auc_diff
-        float or None
-            Difference in AUC scores
-    """
+#     Parameters
+#     ----------
+#     fpr_diff
+#         numpy.ndarray
+#             Differences in False Positive Rates
+#             I.e. `other.fpr - self.fpr` after interpolation.
+#     tpr_diff
+#         numpy.ndarray
+#             Differences in True Positive Rates
+#             I.e. `other.tpr - self.tpr` after interpolation.
+#     thresholds
+#         numpy.ndarray
+#             Thresholds used for interpolation.
+#             Defined as `np.linspace(0, 1, 1001)`.
+#     auc_diff
+#         float or None
+#             Difference in AUC scores
+#     """
 
-    fpr_diff: float
-    tpr_diff: float
-    thresholds: np.ndarray
-    auc_diff: float
+#     fpr_diff: float
+#     tpr_diff: float
+#     thresholds: np.ndarray
+#     auc_diff: float
 
 
 class ROCCurve:
@@ -209,86 +210,127 @@ class ROCCurve:
             auc=curve_dict.get("AUC", None),
         )
 
-    def __sub__(self, other) -> ROCCurveDifferences:
-        """
-        Subtract a ROC curve (TPR and FPR separately) from another.
-        Applied linear interpolation to both curves and
-        subtracts `other.fpr` from `self.fpr` and
-        `other.tpr` from `self.tpr`.
+    # TODO: Unclear whether interpolating to thresholds
+    #       gives meaningful representations of the two curves
+    #       such that the difference is also meaningful
+    # def __sub__(self, other) -> ROCCurveDifferences:
+    #     """
+    #     Subtract a ROC curve (TPR and FPR separately) from another.
+    #     Applied linear interpolation to both curves and
+    #     subtracts `other.fpr` from `self.fpr` and
+    #     `other.tpr` from `self.tpr`.
 
-        The outputs can be used to plot the difference
-        in expected FPR and TPR at given thresholds
-        for two ROC curves.
+    #     The outputs can be used to plot the difference
+    #     in expected FPR and TPR at given thresholds
+    #     for two ROC curves.
 
-        Parameters
-        ----------
-        other: ROCCurve
-            ROC curve to subtract from `self`.
+    #     Parameters
+    #     ----------
+    #     other: ROCCurve
+    #         ROC curve to subtract from `self`.
 
-        Returns
-        -------
-        ROCCurveDifferences
-            With:
-                numpy.ndarray
-                    Differences in False Positive Rates
-                    I.e. `other.fpr - self.fpr` after interpolation.
-                numpy.ndarray
-                    Differences in True Positive Rates
-                    I.e. `other.tpr - self.tpr` after interpolation.
-                numpy.ndarray
-                    Thresholds used for interpolation.
-                    Defined as `np.linspace(0, 1, 1001)`.
-                float or None
-                    Difference in AUC scores
+    #     Returns
+    #     -------
+    #     ROCCurveDifferences
+    #         With:
+    #             numpy.ndarray
+    #                 Differences in False Positive Rates
+    #                 I.e. `other.fpr - self.fpr` after interpolation.
+    #             numpy.ndarray
+    #                 Differences in True Positive Rates
+    #                 I.e. `other.tpr - self.tpr` after interpolation.
+    #             numpy.ndarray
+    #                 Thresholds used for interpolation.
+    #                 Defined as `np.linspace(0, 1, 1001)`.
+    #             float or None
+    #                 Difference in AUC scores
 
-        """
-        num_points = 1001
-        interpolated_roc_1 = self.interpolate(num_points=num_points)
-        interpolated_roc_2 = other.interpolate(num_points=num_points)
+    #     """
+    #     num_points = 1001
+    #     interpolated_roc_1 = self.interpolate(to=num_points, reference="thresholds")
+    #     interpolated_roc_2 = other.interpolate(to=num_points, reference="thresholds")
 
-        auc_diff = None
-        if self.auc is not None and other.auc is not None:
-            auc_diff = self.auc - other.auc
+    #     auc_diff = None
+    #     if self.auc is not None and other.auc is not None:
+    #         auc_diff = self.auc - other.auc
 
-        return ROCCurveDifferences(
-            fpr_diff=interpolated_roc_1.fpr - interpolated_roc_2.fpr,
-            tpr_diff=interpolated_roc_1.tpr - interpolated_roc_2.tpr,
-            thresholds=interpolated_roc_1.thresholds,
-            auc_diff=auc_diff,
-        )
+    #     return ROCCurveDifferences(
+    #         fpr_diff=interpolated_roc_1.fpr - interpolated_roc_2.fpr,
+    #         tpr_diff=interpolated_roc_1.tpr - interpolated_roc_2.tpr,
+    #         thresholds=interpolated_roc_1.thresholds,
+    #         auc_diff=auc_diff,
+    #     )
 
     def interpolate(
         self,
-        num_points: int = 1001,
+        to: Union[int, List[float], np.ndarray] = 1001,
+        reference: str = "fpr",
     ):
         """
         Apply linear interpolation.
+
+        Parameters
+        ----------
+        to : int, list of floats, optional
+            The grid to interpolate to (i.e. new values of `reference` array).
+            Either as a number of points between 0-1,
+            or a list of points (will be sorted in
+            ascending order).
+        reference : str, optional
+            Reference for interpolation ('fpr', 'tpr', or 'thresholds'), by default 'fpr'.
+            NOTE: thresholds don't seem to reproduce AUC scores
+                  failed to find a good source on this.
 
         Returns
         -------
         ROCCurve
             A `ROCCurve` object with interpolated values.
+
         """
+        assert reference in ["fpr", "tpr", "thresholds"]
         # Define a common set of thresholds (equally spaced)
-        thresholds = np.linspace(0, 1, num_points)
 
-        # Interpolate TPR and FPR at common thresholds
-        interpolated_tpr = np.interp(thresholds, self.thresholds[::-1], self.tpr[::-1])[
-            ::-1
-        ]
-        interpolated_fpr = np.interp(thresholds, self.thresholds[::-1], self.fpr[::-1])[
-            ::-1
-        ]
+        if isinstance(to, int):
+            to = np.linspace(0, 1, to)
+        else:
+            to = np.sort(to)
 
-        # Calculate the mean AUC
-        interpolated_auc = auc_from_xy(interpolated_fpr, interpolated_tpr)
+        if reference == "fpr":
+            interpolated_tpr = np.interp(to, self.fpr, self.tpr)
+            interpolated_thresholds = np.interp(to, self.fpr, self.thresholds)
+            interpolated_auc = auc_from_xy(to, interpolated_tpr)
+            return ROCCurve(
+                fpr=to,
+                tpr=interpolated_tpr,
+                thresholds=interpolated_thresholds,
+                auc=interpolated_auc,
+            )
 
-        return ROCCurve(
-            fpr=interpolated_fpr,
-            tpr=interpolated_tpr,
-            thresholds=thresholds[::-1],
-            auc=interpolated_auc,
-        )
+        elif reference == "tpr":
+            interpolated_fpr = np.interp(to, self.tpr, self.fpr)
+            interpolated_thresholds = np.interp(to, self.tpr, self.thresholds)
+            interpolated_auc = auc_from_xy(to, interpolated_fpr)
+            return ROCCurve(
+                fpr=interpolated_fpr,
+                tpr=to,
+                thresholds=interpolated_thresholds,
+                auc=interpolated_auc,
+            )
+
+        elif reference == "thresholds":
+            interpolated_tpr = np.interp(to, self.thresholds[::-1], self.tpr[::-1])[
+                ::-1
+            ]
+            interpolated_fpr = np.interp(to, self.thresholds[::-1], self.fpr[::-1])[
+                ::-1
+            ]
+            interpolated_auc = auc_from_xy(interpolated_fpr, interpolated_tpr)
+            return ROCCurve(
+                fpr=interpolated_fpr,
+                tpr=interpolated_tpr,
+                thresholds=to[::-1],
+                auc=interpolated_auc,
+            )
 
     def __copy__(self):
         return ROCCurve(
@@ -362,16 +404,30 @@ class ROCCurve:
         out.thresholds = np.asarray(out.thresholds, dtype=dtype)
         return out
 
+    @staticmethod
+    def _check_param_bounds(x: float, x_name: str, min_=0.0, max_=1.0):
+        if x < min_ or x > max_:
+            raise ValueError(
+                f"`{x_name}` must be between {min_} and {max_} "
+                f"(including bounds) but was: {x}."
+            )
+
     def get_threshold_at_specificity(
-        self, above_specificity: float = 0.95
+        self, above_specificity: float = 0.95, interpolate: bool = False
     ) -> Dict[str, float]:
         """
-        Find first threshold and sensitivity where specificity is `> above_specificity`.
+        Find first threshold and sensitivity where specificity is `> above_specificity`
+        or use interpolation to get the interpolated threshold at `above_specificity`.
 
         Parameters
         ----------
         above_specificity : float
             Specificity above which to find the first threshold from a ROC curve.
+        interpolate : bool
+            Whether to use interpolation to get the threshold.
+            Interpolates relative to the False Positive Rate (i.e. 1-specificity)
+            and gets the interpolated threshold at the exact specificity
+            (i.e. `above_specificity`).
 
         Returns
         -------
@@ -379,44 +435,75 @@ class ROCCurve:
                 Dictionary with threshold, specificity, and sensitivity.
         """
 
-        specificities = 1 - self.fpr
+        ROCCurve._check_param_bounds(x=above_specificity, x_name="above_specificity")
 
-        # Find first threshold where specifity is above `above_specificity`
-        threshold_idx = np.argwhere(specificities > above_specificity)[-1][0]
+        if interpolate:
+            interpolated_roc = self.interpolate(
+                to=[0, 1 - above_specificity, 1], reference="fpR"
+            )
+            return {
+                "Threshold": interpolated_roc.thresholds[1],
+                "Specificity": above_specificity,
+                "Sensitivity": interpolated_roc.tpr[1],
+            }
 
-        return {
-            "Threshold": self.thresholds[threshold_idx],
-            "Specificity": 1 - self.fpr[threshold_idx],
-            "Sensitivity": self.tpr[threshold_idx],
-        }
+        else:
+            specificities = 1 - self.fpr
+
+            # Find first threshold where specifity is above `above_specificity`
+            threshold_idx = np.argwhere(specificities > above_specificity)[-1][0]
+
+            return {
+                "Threshold": self.thresholds[threshold_idx],
+                "Specificity": 1 - self.fpr[threshold_idx],
+                "Sensitivity": self.tpr[threshold_idx],
+            }
 
     def get_threshold_at_sensitivity(
-        self, above_sensitivity: float = 0.95
+        self, above_sensitivity: float = 0.95, interpolate: bool = False
     ) -> Dict[str, float]:
         """
-        Find first threshold and specificity where sensitivity is `> above_sensitivity`.
+        Find first threshold and specificity where sensitivity is `> above_sensitivity`
+        or use interpolation to get the interpolated threshold at `above_sensitivity`.
 
         Parameters
         ----------
         above_sensitivity : float
             Sensitivity above which to find the first threshold from a ROC curve.
+        interpolate : bool
+            Whether to use interpolation to get the threshold.
+            Interpolates relative to the sensitivities and gets the
+            interpolated threshold at the exact sensitivity
+            (i.e. `above_sensitivity`).
 
         Returns
         -------
             dict
                 Dictionary with threshold, specificity, and sensitivity.
         """
+        ROCCurve._check_param_bounds(x=above_sensitivity, x_name="above_sensitivity")
 
-        sensitivities = self.tpr
+        if interpolate:
+            interpolated_roc = self.interpolate(
+                to=[0, above_sensitivity, 1], reference="tpR"
+            )
+            return {
+                "Threshold": interpolated_roc.thresholds[1],
+                "Specificity": interpolated_roc.fpr[1],
+                "Sensitivity": above_sensitivity,
+            }
 
-        # Find first threshold where specifity is above `above_specificity`
-        threshold_idx = np.argwhere(sensitivities > above_sensitivity)[0][0]
+        else:
+            sensitivities = self.tpr
 
-        return {
-            "Threshold": self.thresholds[threshold_idx],
-            "Specificity": 1 - self.fpr[threshold_idx],
-            "Sensitivity": self.tpr[threshold_idx],
-        }
+            # Find first threshold where specifity is above `above_specificity`
+            threshold_idx = np.argwhere(sensitivities > above_sensitivity)[0][0]
+
+            return {
+                "Threshold": self.thresholds[threshold_idx],
+                "Specificity": 1 - self.fpr[threshold_idx],
+                "Sensitivity": self.tpr[threshold_idx],
+            }
 
     def get_nearest_threshold(self, threshold: float) -> Dict[str, float]:
         """
@@ -433,6 +520,8 @@ class ROCCurve:
                 Dictionary with threshold, specificity, and sensitivity.
         """
 
+        ROCCurve._check_param_bounds(x=threshold, x_name="threshold")
+
         # Find first threshold where specifity is above `above_specificity`
         threshold_idx = np.abs(self.thresholds - threshold).argmin()
 
@@ -442,7 +531,65 @@ class ROCCurve:
             "Sensitivity": self.tpr[threshold_idx],
         }
 
-    def get_threshold_at_max_j(self) -> Dict[str, float]:
+    def get_interpolated_threshold(self, threshold: float) -> Dict[str, float]:
+        """
+        Get the specificity and sensitivity (and threshold) for a specific
+        threshold by interpolating relative to the thresholds.
+
+        Parameters
+        ----------
+        threshold : float
+            Threshold to find via interpolation.
+
+        Returns
+        -------
+            dict
+                Dictionary with threshold, specificity, and sensitivity.
+        """
+        ROCCurve._check_param_bounds(x=threshold, x_name="threshold")
+
+        interpolated_roc = self.interpolate(
+            to=[0, threshold, 1], reference="thresholds"
+        )
+        return {
+            "Threshold": threshold,
+            "Specificity": interpolated_roc.fpr[1],
+            "Sensitivity": interpolated_roc.tpr[1],
+        }
+
+    def get_threshold_at_max_j(self, interpolate: bool = False) -> Dict[str, float]:
+        """
+        Find first threshold where Youden's J statistic is at its max.
+
+        Youden's J statistic is defined as
+            `J = sensitivity + Specificity - 1`
+        and can thus be written as:
+            `J = TPR - FPR`
+
+        Parameters
+        ----------
+        interpolate : bool
+            Whether to use interpolation to get the threshold.
+            Interpolates relative to the False Positive Rate to
+            get a (possibly higher) resolution of `1001` points
+            (between 0 and 1) and gets the interpolated threshold
+            at the maximum Youden's J. The idea is, that this
+            might get a more precise expected threshold to use
+            on new data.
+
+        Returns
+        -------
+            dict
+                Dictionary with threshold, specificity, and sensitivity.
+        """
+        if interpolate:
+            interpolated_roc = self.interpolate(reference="fpR")
+            return ROCCurve._get_threshold_at_max_j(interpolated_roc)
+        else:
+            return ROCCurve._get_threshold_at_max_j(self)
+
+    @staticmethod
+    def _get_threshold_at_max_j(roc) -> Dict[str, float]:
         """
         Find first threshold where Youden's J statistic is at its max.
 
@@ -458,15 +605,15 @@ class ROCCurve:
         """
 
         # Calculate Youden's J statistic
-        j = self.tpr - self.fpr
+        j = roc.tpr - roc.fpr
 
-        # Get lowest treshold with max J
+        # Get lowest threshold with max J
         threshold_idx = sorted(np.where(j == np.max(j))[0])[-1]
 
         return {
-            "Threshold": self.thresholds[threshold_idx],
-            "Specificity": 1 - self.fpr[threshold_idx],
-            "Sensitivity": self.tpr[threshold_idx],
+            "Threshold": roc.thresholds[threshold_idx],
+            "Specificity": 1 - roc.fpr[threshold_idx],
+            "Sensitivity": roc.tpr[threshold_idx],
         }
 
     def to_printable_dict(
@@ -764,6 +911,11 @@ class ROCCurves:
         Get the average ROC curves for a given set of paths.
 
         Uses linear interpolation and vertical (weighted) averaging.
+
+        Parameters
+        ----------
+        num_points
+            Number of points to use during interpolation.
         """
         if weights is not None and len(weights) != len(paths):
             raise ValueError(
@@ -783,7 +935,7 @@ class ROCCurves:
         # Calculate average ROC curves
         return ROCCurves.average_roc_curves(
             rocs,
-            num_points=num_points,
+            to=num_points,
             weights=weights,
         )
 
@@ -796,11 +948,16 @@ class ROCCurves:
         """
         Average a set of ROC curves using linear interpolation and
         vertical (weighted) averaging.
+
+        Interpolation is performed relative to the
+        False Positive Rates.
         """
-        # Initialize lists to hold interpolated TPR and FPR values
+        # Initialize lists to hold interpolated TPR and threshold values
+        thresholds_interp_list = []
         tpr_interp_list = []
-        fpr_interp_list = []
-        common_thresholds = None
+
+        # We use fpr as reference during interpolation
+        common_fpr = None
 
         # Extract weights or use uniform weights if not provided
         if weights is None:
@@ -812,28 +969,25 @@ class ROCCurves:
             weights /= np.mean(weights)
 
         for roc_, weight in zip(roc_dict.values(), weights):
-            interpolated_roc = roc_.interpolate(num_points=num_points)
+            interpolated_roc = roc_.interpolate(to=num_points, reference="fpr")
 
             tpr_interp_list.append(interpolated_roc.tpr * weight)
-            fpr_interp_list.append(interpolated_roc.fpr * weight)
+            thresholds_interp_list.append(interpolated_roc.thresholds * weight)
 
-            if common_thresholds is None:
-                common_thresholds = interpolated_roc.thresholds
+            if common_fpr is None:
+                common_fpr = interpolated_roc.fpr
 
         # Calculate the weighted average TPR and FPR
         mean_tpr = np.sum(tpr_interp_list, axis=0) / np.sum(weights)
-        mean_fpr = np.sum(fpr_interp_list, axis=0) / np.sum(weights)
-
-        # Calculate the mean AUC
-        mean_auc = auc_from_xy(mean_fpr, mean_tpr)
+        mean_thresholds = np.sum(thresholds_interp_list, axis=0) / np.sum(weights)
 
         # Reverse arrays to be consistent with rest of ROC Curves
         return ROCCurve(
-            fpr=mean_fpr,
+            fpr=common_fpr,
             tpr=mean_tpr,
-            thresholds=common_thresholds,
-            auc=mean_auc,
-        )
+            thresholds=mean_thresholds,
+            auc=None,
+        ).recalculate_auc()
 
     def to_dict(self, copy: bool = True) -> dict:
         """
