@@ -287,6 +287,7 @@ class ROCCurve:
             A `ROCCurve` object with interpolated values.
 
         """
+        reference = reference.lower()
         assert reference in ["fpr", "tpr", "thresholds"]
         # Define a common set of thresholds (equally spaced)
 
@@ -439,7 +440,7 @@ class ROCCurve:
 
         if interpolate:
             interpolated_roc = self.interpolate(
-                to=[0, 1 - above_specificity, 1], reference="fpR"
+                to=[0, 1 - above_specificity, 1], reference="fpr"
             )
             return {
                 "Threshold": interpolated_roc.thresholds[1],
@@ -485,7 +486,7 @@ class ROCCurve:
 
         if interpolate:
             interpolated_roc = self.interpolate(
-                to=[0, above_sensitivity, 1], reference="tpR"
+                to=[0, above_sensitivity, 1], reference="tpr"
             )
             return {
                 "Threshold": interpolated_roc.thresholds[1],
@@ -583,7 +584,7 @@ class ROCCurve:
                 Dictionary with threshold, specificity, and sensitivity.
         """
         if interpolate:
-            interpolated_roc = self.interpolate(reference="fpR")
+            interpolated_roc = self.interpolate(reference="fpr")
             return ROCCurve._get_threshold_at_max_j(interpolated_roc)
         else:
             return ROCCurve._get_threshold_at_max_j(self)
