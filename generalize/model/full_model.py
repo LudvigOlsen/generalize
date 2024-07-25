@@ -456,7 +456,7 @@ def train_full_model(
     if "ROC" in evaluation:
         # Average ROC curve
         roc_curves: ROCCurves = evaluation["ROC"]
-        average_roc_curve = roc_curves.get_average_roc_curves(paths=roc_curves.paths)
+        average_roc_curve = roc_curves.get_average_roc_curve(paths=roc_curves.paths)
         evaluation["ROC"].add(path="Average", roc_curve=average_roc_curve)
 
         # Overall ROC curve

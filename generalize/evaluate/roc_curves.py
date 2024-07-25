@@ -901,7 +901,7 @@ class ROCCurves:
 
         return new_collection
 
-    def get_average_roc_curves(
+    def get_average_roc_curve(
         self,
         paths: List[str],
         num_points: int = 1001,
@@ -935,7 +935,7 @@ class ROCCurves:
         # Calculate average ROC curves
         return ROCCurves.average_roc_curves(
             rocs,
-            to=num_points,
+            num_points=num_points,
             weights=weights,
         )
 
