@@ -49,7 +49,7 @@ def cross_validate(
     messenger: Optional[Callable] = Messenger(verbose=True, indent=0, msg_fn=print),
 ):
     """
-    Perform nested cross-validation in order to evaluate the potential of a model architecture.
+    Perform cross-validation (without hyperparameter optimization, see `nested_cross_validate()` for that).
 
     Specify data points to only use as training data in both the inner and outer cross-validation
     via `split` and/or `groups`.

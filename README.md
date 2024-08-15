@@ -6,5 +6,17 @@ The ultimate goal of training machine learning models is to generalize to new, u
 
 Under development!
 
- - Relies on an old version of scikit-learn
- - Regression is not currently working
+ - Not generalized enough for general usage (ironic, I know)
+ - Relies on an old version of scikit-learn, needs updating
+ - Linear regression is not currently working
+
+### Main functions and classes
+
+| Function                       | Description                                                                        |
+|:-------------------------------|:-----------------------------------------------------------------------------------|
+| `nested_cross_validate()`      | Run (repeated) nested cross-validation.                                            |
+| `train_full_model()`           | Train model on all data and save to disk.                                          |
+| `evaluate_univariate_models()` | Evaluate prediction potential of every predictor separately.                       |
+| `PipelineDesigner`             | Design a scikit-learn pipeline for use in cross-validation.                        |
+| `ROCCurve`, `ROCCurves`        | ROC curve containers with various utility methods.                                 |
+| `select_samples()`             | Utility for selecting samples based on (collapsed) labels.                         |
