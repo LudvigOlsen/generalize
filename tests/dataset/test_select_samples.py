@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from dolearn.dataset.subset_dataset import select_samples
+from generalize.dataset.subset_dataset import select_samples
 
 
 def test_select_samples():
