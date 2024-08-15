@@ -9,6 +9,7 @@ Under development!
  - Not generalized enough for general usage (ironic, I know)
  - Relies on an old version of scikit-learn, needs updating
  - Linear regression is not currently working
+ - Help strings are likely not up-to-date
 
 ### Main functions and classes
 
