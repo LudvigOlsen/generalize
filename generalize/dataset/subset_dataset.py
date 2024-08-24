@@ -1,4 +1,5 @@
 from typing import Callable, List, Optional, Tuple, Union
+import re
 import numpy as np
 from utipy import Messenger, check_messenger
 
@@ -13,6 +14,7 @@ def select_samples(
     positive_label: Optional[str] = None,
     downsample: bool = False,
     shuffle: bool = False,
+    rm_prefixed_index: bool = False,
     seed: Optional[int] = 1,
     messenger: Optional[Callable] = Messenger(verbose=True, indent=0, msg_fn=print),
 ) -> Tuple[list, np.ndarray, dict, int]:
@@ -42,6 +44,8 @@ def select_samples(
         Whether to downsample to the smallest class.
     shuffle
         Whether to shuffle the output. Otherwise the samples are ordered by their label.
+    rm_prefixed_index
+        Whether to remove prefixed indices (e.g. "0_<label>") from new label names.
     seed
         Random seed to use.
     messenger
@@ -130,6 +134,19 @@ def select_samples(
 
         new_label_to_old_labels = {label: [label] for label in non_collapsed_labels}
         new_label_to_old_labels.update(collapse_map)
+
+    # Order `new_label_to_old_labels` by key alphabetically
+    # and remove potential prefixed indices (when specified)
+    def remove_prefixed_index(s):
+        if not rm_prefixed_index:
+            return s
+        # When present, remove the index followed by an underscore at the start of the string
+        return re.sub(r"^\d+_", "", s)
+
+    new_label_to_old_labels = {
+        remove_prefixed_index(key): new_label_to_old_labels[key]
+        for key in sorted(new_label_to_old_labels.keys())
+    }
 
     # Create additional mappings between labels (old/new) and label indices
     old_label_to_new_label_idx = {}
