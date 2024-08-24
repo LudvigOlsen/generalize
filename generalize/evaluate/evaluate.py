@@ -765,6 +765,7 @@ class Evaluator:
         groups_list: Optional[List[Union[np.ndarray, list]]] = None,
         sample_ids: Optional[Union[np.ndarray, list]] = None,
         split_indices_list: Optional[List[np.ndarray]] = None,
+        target_idx_to_target_label_map: Optional[Dict[int, str]] = None,
         out_path: Union[pathlib.Path, str] = None,
         idx_names: Optional[List[str]] = None,
         idx_colname: str = "Repetition",
@@ -775,27 +776,31 @@ class Evaluator:
 
         Parameters
         ----------
-        predictions_list : list
+        predictions_list
             List of prediction arrays / data frames.
-        targets : list or `numpy.ndarray`
+        targets
             Target values. Expected to have same length
             and order as each prediction set.
-        groups : list or `numpy.ndarray`
+        groups
             Sample groups (like subject IDs).
-        split_indices_list : list
+        split_indices_list
             Lists / `numpy.ndarray`s with split indices
             (i.e. fold index per observation).
             The order of both the lists and list elements are assumed
             to match `predictions_list`.
-        out_path : str or `pathlib.Path`
+        target_idx_to_target_label_map
+            Mapping of target class indices to their names (labels).
+            Is used to rename probability columns
+            in multiclass classification.
+        out_path
             Path to the directory to save the predictions in.
-        idx_names: list of str or None
+        idx_names
             Names of evaluations (repetitions).
             When `None`, a simple index (0 -> N-1) is used.
-        idx_colname : str
+        idx_colname
             Name of prediction set index column
             in the final, concatenated data frame.
-        identifier_cols_dict : dict or None
+        identifier_cols_dict
             Dict mapping column name -> string
             to add to the prediction data frame
             *after* repetitions are concatenated.
@@ -821,6 +826,13 @@ class Evaluator:
         if len(predictions_list[0].columns) == 1:
             for preds in predictions_list:
                 preds.columns = ["Prediction"]
+        elif target_idx_to_target_label_map is not None:
+            prob_columns = [
+                "P(" + target_idx_to_target_label_map[idx_key] + ")"
+                for idx_key in sorted(target_idx_to_target_label_map.keys())
+            ]
+            for preds in predictions_list:
+                preds.columns = prob_columns
 
         # Add targets to each data frame
         if targets is not None:
