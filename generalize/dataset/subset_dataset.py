@@ -161,6 +161,7 @@ def select_samples(
     # Get updated positive label
     new_positive_label = None
     if positive_label is not None:
+        positive_label = remove_prefixed_index(positive_label)
         if num_new_labels != 2:
             raise ValueError(
                 (
