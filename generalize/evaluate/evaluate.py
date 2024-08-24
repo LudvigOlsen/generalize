@@ -766,6 +766,7 @@ class Evaluator:
         sample_ids: Optional[Union[np.ndarray, list]] = None,
         split_indices_list: Optional[List[np.ndarray]] = None,
         target_idx_to_target_label_map: Optional[Dict[int, str]] = None,
+        positive_class: Optional[str] = None,
         out_path: Union[pathlib.Path, str] = None,
         idx_names: Optional[List[str]] = None,
         idx_colname: str = "Repetition",
@@ -792,6 +793,10 @@ class Evaluator:
             Mapping of target class indices to their names (labels).
             Is used to rename probability columns
             in multiclass classification.
+        positive_class
+            Name of the predicted class when only one
+            probability class is present.
+            Optional. Used to rename probability column.
         out_path
             Path to the directory to save the predictions in.
         idx_names
@@ -824,20 +829,27 @@ class Evaluator:
 
         # Rename prediction column when it's a single column
         if len(predictions_list[0].columns) == 1:
-            for preds in predictions_list:
-                preds.columns = ["Prediction"]
+            for preds_df in predictions_list:
+                if positive_class is not None:
+                    preds_df.columns = [f"P({positive_class})"]
+                else:
+                    preds_df.columns = ["Prediction"]
         elif target_idx_to_target_label_map is not None:
             prob_columns = [
                 "P(" + target_idx_to_target_label_map[idx_key] + ")"
                 for idx_key in sorted(target_idx_to_target_label_map.keys())
             ]
-            for preds in predictions_list:
-                preds.columns = prob_columns
+            for preds_df in predictions_list:
+                preds_df.columns = prob_columns
 
         # Add targets to each data frame
         if targets is not None:
             for preds_df in predictions_list:
                 preds_df["Target"] = targets
+                if target_idx_to_target_label_map is not None:
+                    preds_df["Target Label"] = [
+                        target_idx_to_target_label_map[t] for t in preds_df["Target"]
+                    ]
         if targets_list is not None:
             assert len(targets_list) == len(predictions_list)
             for preds_df, tgts in zip(predictions_list, targets_list):
