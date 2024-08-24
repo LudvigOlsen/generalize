@@ -18,3 +18,12 @@ from .dataset.subset_dataset import (
     select_feature_sets,
     select_indices,
 )
+
+
+def get_version():
+    import importlib.metadata
+
+    return importlib.metadata.version("generalize")
+
+
+__version__ = get_version()
