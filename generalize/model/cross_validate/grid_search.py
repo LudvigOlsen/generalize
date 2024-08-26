@@ -573,7 +573,7 @@ def make_simplest_model_refit_strategy(
                     )
                 var_col_nm, var_key_nm = var_split
 
-                cv_results.loc[:, var_col_nm] = cv_results["params"].apply(
+                cv_results.loc[:, var_nm] = cv_results["params"].apply(
                     lambda d: d[var_col_nm][var_key_nm.lstrip("_")]
                 )
 
