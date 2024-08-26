@@ -29,14 +29,14 @@ def test_custom_refit_strategy():
     pipeline = Pipeline(pipe_steps)
     param_grid = {"model__C": [0.1, 1, 10, 100]}
 
-    # Setup GridSearchCV with the custom refit strategy
+    # Setup GridSearchCV with the custom refit strategy 
     grid_search = NestableGridSearchCV(
         pipeline,
         param_grid,
         cv=5,
         seed=None,
         refit=make_simplest_model_refit_strategy(
-            main_var="model__C",
+            main_var=("model__C", "minimize"),
             score_name="balanced_accuracy",
             verbose=True,
         ),

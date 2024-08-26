@@ -531,6 +531,7 @@ def make_simplest_model_refit_strategy(
         selected_index : int
             The index of the selected estimator as it appears in `cv_results`.
         """
+        # Ensure we don't alter the outer cv_results
         cv_results = cv_results.copy()
 
         if isinstance(cv_results, dict):
@@ -543,9 +544,15 @@ def make_simplest_model_refit_strategy(
 
         # Create columns for the hyperparameters
         # TODO: What happens when the value is a dict?
+        assert (
+            isinstance(main_var, Tuple)
+            and isinstance(main_var[0], str)
+            and isinstance(main_var[1], str)
+        ), "`main_var` must be a tuple of two strings `(name, direction)`."
         all_hyperparameter_names = [main_var[0]]
         if other_vars is not None:
             all_hyperparameter_names += [var_nm for (var_nm, _) in other_vars]
+
         for var_nm in all_hyperparameter_names:
             if "[" in var_nm:
                 # Column is nested in a dict
@@ -553,8 +560,8 @@ def make_simplest_model_refit_strategy(
                 # and 'zz' is the key within the dict
                 if var_nm[0] != "[":
                     raise ValueError(
-                        "Var name: When specifying a column->dict relationship with '[xx]', "
-                        "the first character must be `[`. "
+                        "Var name: When specifying a column->dict relationship "
+                        "with '[xx]', the first character must be `[`. "
                         f"Got: `{var_nm}`."
                     )
                 var_split = var_nm[1:].split("]")
@@ -566,9 +573,10 @@ def make_simplest_model_refit_strategy(
                     )
                 var_col_nm, var_key_nm = var_split
 
-                cv_results.loc[:, var_nm] = cv_results["params"].apply(
+                cv_results.loc[:, var_col_nm] = cv_results["params"].apply(
                     lambda d: d[var_col_nm][var_key_nm.lstrip("_")]
                 )
+
             else:
                 cv_results.loc[:, var_nm] = cv_results["params"].apply(
                     lambda d: d[var_nm]
@@ -584,6 +592,7 @@ def make_simplest_model_refit_strategy(
             best_score_index = cv_results[f"mean_test_{used_score_name}"].idxmin()
         best_score = cv_results.loc[best_score_index, f"mean_test_{used_score_name}"]
         best_score_std = cv_results.loc[best_score_index, f"std_test_{used_score_name}"]
+
         best_score_hparams = cv_results.loc[best_score_index, all_hyperparameter_names]
 
         score_threshold = (
@@ -616,12 +625,12 @@ def make_simplest_model_refit_strategy(
 
         selected_index = (
             made_threshold_cv_results.sort_values(
-                [main_var],
+                by=main_var[0],
                 ascending=score_direction == "minimize",
                 kind="stable",  # NOTE: Required for iterative sorting!
             )
             .reset_index(drop=True)
-            .iloc[0, "original_index"][0]
+            .loc[0, "original_index"]
         )
 
         if verbose:
@@ -631,9 +640,9 @@ def make_simplest_model_refit_strategy(
             print(f"  score threshold: {score_threshold}")
             print(
                 f"Parameters: {cv_results.loc[selected_index, all_hyperparameter_names]} | ",
-                f"score: {cv_results.loc[selected_index, f'mean_test_{used_score_name}'][0]}",
+                f"score: {cv_results.loc[selected_index, f'mean_test_{used_score_name}']}",
             )
 
-        return selected_index
+        return int(selected_index)
 
     return simplest_model_refit_strategy
