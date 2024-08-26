@@ -615,7 +615,7 @@ def make_simplest_model_refit_strategy(
                 made_threshold_cv_results = made_threshold_cv_results.loc[
                     get_direction_fn(var_direction)(
                         made_threshold_cv_results[var_nm],
-                        best_score_hparams[var_nm][0],
+                        best_score_hparams[var_nm],
                     )
                 ].sort_values(
                     [var_nm],
