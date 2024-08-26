@@ -611,7 +611,7 @@ def make_simplest_model_refit_strategy(
         # are equal to or higher/lower (specified per var)
         # than the best solution
         if other_vars is not None:
-            for var_nm, var_direction in reversed(other_vars) + [main_var]:
+            for var_nm, var_direction in reversed([main_var] + other_vars):
                 made_threshold_cv_results = made_threshold_cv_results.loc[
                     get_direction_fn(var_direction)(
                         made_threshold_cv_results[var_nm],
