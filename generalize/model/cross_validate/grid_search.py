@@ -610,19 +610,21 @@ def make_simplest_model_refit_strategy(
         # Only keep solutions where all specified variables
         # are equal to or higher/lower (specified per var)
         # than the best solution
+        all_vars = [main_var]
         if other_vars is not None:
-            for var_nm, var_direction in reversed([main_var] + other_vars):
-                made_threshold_cv_results = made_threshold_cv_results.loc[
-                    get_direction_fn(var_direction)(
-                        made_threshold_cv_results[var_nm],
-                        best_score_hparams[var_nm],
-                    )
-                ].sort_values(
-                    [var_nm],
-                    ascending=var_direction == "minimize",
-                    kind="stable",  # NOTE: Required for iterative sorting!
+            all_vars += other_vars
+
+        for var_nm, var_direction in reversed(all_vars):
+            made_threshold_cv_results = made_threshold_cv_results.loc[
+                get_direction_fn(var_direction)(
+                    made_threshold_cv_results[var_nm],
+                    best_score_hparams[var_nm],
                 )
-        print(made_threshold_cv_results)
+            ].sort_values(
+                [var_nm],
+                ascending=var_direction == "minimize",
+                kind="stable",  # NOTE: Required for iterative sorting!
+            )
 
         selected_index = made_threshold_cv_results.reset_index(drop=True).loc[
             0, "original_index"
@@ -636,7 +638,7 @@ def make_simplest_model_refit_strategy(
 
             messenger("Best model", add_indent=2)
             messenger(
-                f"Parameters: {cv_results.loc[best_score_index, all_hyperparameter_names]}",
+                f"Parameters: {cv_results.loc[best_score_index, all_hyperparameter_names].to_dict('records')[0]}",
                 add_indent=4,
             )
             messenger(
@@ -646,7 +648,7 @@ def make_simplest_model_refit_strategy(
 
             messenger("Selected model")
             messenger(
-                f"Parameters: {cv_results.loc[selected_index, all_hyperparameter_names]}",
+                f"Parameters: {cv_results.loc[selected_index, all_hyperparameter_names].to_dict('records')[0]}",
                 add_indent=4,
             )
             messenger(
