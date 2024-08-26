@@ -461,7 +461,7 @@ def make_simplest_model_refit_strategy(
     score_name: str,
     other_vars: Optional[List[Tuple[str, str]]] = None,
     score_direction: str = "auto",
-    verbose: bool = False,
+    messenger: Optional[Callable] = Messenger(verbose=False, indent=0, msg_fn=print),
 ):
     """
     Create function for the `refit` argument that finds the hyperparameter
@@ -633,14 +633,30 @@ def make_simplest_model_refit_strategy(
             .loc[0, "original_index"]
         )
 
-        if verbose:
-            print("simplest_model_refit_strategy: ")
-            print(f"  best_score: {best_score}")
-            print(f"  score std: {best_score_std}")
-            print(f"  score threshold: {score_threshold}")
-            print(
-                f"Parameters: {cv_results.loc[selected_index, all_hyperparameter_names]} | ",
+        if messenger.verbose:
+            messenger("simplest_model_refit_strategy: ")
+            messenger(f"best_score: {best_score}", add_indent=2)
+            messenger(f"score std: {best_score_std}", add_indent=2)
+            messenger(f"score threshold: {score_threshold}", add_indent=2)
+
+            messenger("Best model", add_indent=2)
+            messenger(
+                f"Parameters: {cv_results.loc[best_score_index, all_hyperparameter_names]}",
+                add_indent=4,
+            )
+            messenger(
+                f"score: {cv_results.loc[best_score_index, f'mean_test_{used_score_name}']}",
+                add_indent=4,
+            )
+
+            messenger("Selected model")
+            messenger(
+                f"Parameters: {cv_results.loc[selected_index, all_hyperparameter_names]}",
+                add_indent=4,
+            )
+            messenger(
                 f"score: {cv_results.loc[selected_index, f'mean_test_{used_score_name}']}",
+                add_indent=4,
             )
 
         return int(selected_index)
