@@ -5,7 +5,7 @@ from sklearn.model_selection import GridSearchCV
 
 from generalize.model.cross_validate.grid_search import (
     NestableGridSearchCV,
-    make_lowest_c_refit_strategy,
+    make_simplest_model_refit_strategy,
 )
 from generalize.model.pipeline.pipeline_designer import PipelineDesigner
 
@@ -35,8 +35,8 @@ def test_custom_refit_strategy():
         param_grid,
         cv=5,
         seed=None,
-        refit=make_lowest_c_refit_strategy(
-            c_name="model__C",
+        refit=make_simplest_model_refit_strategy(
+            main_var="model__C",
             score_name="balanced_accuracy",
             verbose=True,
         ),
@@ -66,8 +66,8 @@ def test_standard_grid_search():
         model,
         param_grid,
         cv=5,
-        refit=make_lowest_c_refit_strategy(
-            c_name="C",
+        refit=make_simplest_model_refit_strategy(
+            main_var="C",
             score_name="balanced_accuracy",
             verbose=True,
         ),

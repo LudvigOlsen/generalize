@@ -1,7 +1,7 @@
 from numbers import Number
 import random
 import pathlib
-from typing import Callable, List, Optional, Union, Dict
+from typing import Callable, List, Optional, Union, Dict, Tuple
 import warnings
 import copy
 import numpy as np
@@ -165,7 +165,6 @@ class NestableGridSearchCV(GridSearchCV):
 
         fit_problems = []
         if self.error_score == "raise":
-
             # We may have many convergence warnings, so we catch them
             # and display _one_ afterwards
             with warnings.catch_warnings(record=True) as w:  # Restores filters on exit
@@ -455,3 +454,186 @@ def make_lowest_c_refit_strategy(
         return lowest_c_index
 
     return lowest_c_refit_strategy
+
+
+def make_simplest_model_refit_strategy(
+    main_var: Tuple[str, str],
+    score_name: str,
+    other_vars: Optional[List[Tuple[str, str]]] = None,
+    score_direction: str = "auto",
+    verbose: bool = False,
+):
+    """
+    Create function for the `refit` argument that finds the hyperparameter
+    combination where the average score is within the
+    standard deviation of the best scoring combination and
+    the lowest or highest value of a main hyperparameter value (e.g. lowest C in LASSO)
+    and ensures the values of other hyperparameters are equal to or either higher or lower
+    than in the best combination (e.g. lower or same number of PCA components).
+
+    Parameters
+    ----------
+    main_var : (name, direction)
+        The name of the hyperparameter in `cv_results_` and whether
+        a lower or higher value would create the simpler model.
+        The direction should be one of {'minimize', 'maximize'}.
+        If a variable is nested inside a dict, the name can
+        specify this with `'[transformer__dict]__variable'`. In
+        which case we will first get the 'transformer__dict' column
+        from cv_results_ and then the 'variable' element
+        from that dict.
+    other_vars : List of (name, direction) tuples or None
+        List of other hyperparameters which should have a value
+        either equal to their value in the best combination
+        or a higher / lower value.
+        The direction should be one of {'minimize', 'maximize'}.
+        If a variable is nested inside a dict, the name can
+        specify this with `'[transformer__dict]__variable'`. In
+        which case we will first get the 'transformer__dict' column
+        from cv_results_ and then the 'variable' element
+        from that dict.
+
+    Returns
+    -------
+    callable
+        The refit strategy function.
+
+    """
+
+    if score_direction == "auto":
+        score_direction = "maximize" if get_scorer(score_name)._sign > 0 else "minimize"
+    assert score_direction in ["maximize", "minimize"]
+
+    def get_direction_fn(direction: bool, or_eq: bool = True):
+        direction = direction.lower()
+        assert direction in ["maximize", "minimize"]
+        return {
+            ("maximize", True): lambda x, y: x >= y,
+            ("maximize", False): lambda x, y: x > y,
+            ("minimize", True): lambda x, y: x <= y,
+            ("minimize", False): lambda x, y: x < y,
+        }[(direction, or_eq)]
+
+    def simplest_model_refit_strategy(cv_results):
+        """Define the strategy to select the best estimator.
+
+        Gets the lowest/highest `main_var` value where the average score is within the
+        standard deviation of the best scoring `main_var` value and equal to or higher/lower
+        in the `other_vars`.
+
+        Parameters
+        ----------
+        cv_results : dict of numpy (masked) ndarrays or `pandas.DataFrame` based on that dict
+            CV results as returned by the `GridSearchCV`.
+
+        Returns
+        -------
+        selected_index : int
+            The index of the selected estimator as it appears in `cv_results`.
+        """
+        cv_results = cv_results.copy()
+
+        if isinstance(cv_results, dict):
+            cv_results = pd.DataFrame(cv_results)
+        else:
+            assert isinstance(cv_results, pd.DataFrame)
+
+        # Create index column
+        cv_results["original_index"] = range(len(cv_results))
+
+        # Create columns for the hyperparameters
+        # TODO: What happens when the value is a dict?
+        all_hyperparameter_names = [main_var[0]]
+        if other_vars is not None:
+            all_hyperparameter_names += [var_nm for (var_nm, _) in other_vars]
+        for var_nm in all_hyperparameter_names:
+            if "[" in var_nm:
+                # Column is nested in a dict
+                # E.g. '{xx__yy}__zz' means '{xx__yy}' is the column with the dict
+                # and 'zz' is the key within the dict
+                if var_nm[0] != "[":
+                    raise ValueError(
+                        "Var name: When specifying a column->dict relationship with '[xx]', "
+                        "the first character must be `[`. "
+                        f"Got: `{var_nm}`."
+                    )
+                var_split = var_nm[1:].split("]")
+                if len(var_split) != 2:
+                    raise ValueError(
+                        "Var name: When specifying a column->dict relationship with '[xx]', "
+                        "there must be exactly one `]` character and it must not be "
+                        "located in the end."
+                    )
+                var_col_nm, var_key_nm = var_split
+
+                cv_results.loc[:, var_nm] = cv_results["params"].apply(
+                    lambda d: d[var_col_nm][var_key_nm.lstrip("_")]
+                )
+            else:
+                cv_results.loc[:, var_nm] = cv_results["params"].apply(
+                    lambda d: d[var_nm]
+                )
+
+        used_score_name = score_name
+        if f"mean_test_{score_name}" not in cv_results:
+            used_score_name = "score"
+
+        if score_direction == "maximize":
+            best_score_index = cv_results[f"mean_test_{used_score_name}"].idxmax()
+        else:
+            best_score_index = cv_results[f"mean_test_{used_score_name}"].idxmin()
+        best_score = cv_results.loc[best_score_index, f"mean_test_{used_score_name}"]
+        best_score_std = cv_results.loc[best_score_index, f"std_test_{used_score_name}"]
+        best_score_hparams = cv_results.loc[best_score_index, all_hyperparameter_names]
+
+        score_threshold = (
+            best_score - best_score_std
+            if score_direction == "maximize"
+            else best_score + best_score_std
+        )
+        made_threshold_cv_results = cv_results.loc[
+            get_direction_fn(score_direction)(
+                cv_results[f"mean_test_{used_score_name}"],
+                score_threshold,
+            )
+        ].copy()
+
+        # Only keep solutions where the `other_vars`
+        # are equal to or higher/lower (specified per var)
+        # than the best solution
+        if other_vars is not None:
+            for var_nm, var_direction in reversed(other_vars):
+                made_threshold_cv_results = made_threshold_cv_results.loc[
+                    get_direction_fn(var_direction)(
+                        made_threshold_cv_results[var_nm],
+                        best_score_hparams[var_nm][0],
+                    )
+                ].sort_values(
+                    [var_nm],
+                    ascending=var_direction == "minimize",
+                    kind="stable",  # NOTE: Required for iterative sorting!
+                )
+
+        selected_index = (
+            made_threshold_cv_results.sort_values(
+                [main_var],
+                ascending=score_direction == "minimize",
+                kind="stable",  # NOTE: Required for iterative sorting!
+            )
+            .reset_index(drop=True)
+            .iloc[0, "original_index"][0]
+        )
+
+        if verbose:
+            print("simplest_model_refit_strategy: ")
+            print(f"  best_score: {best_score}")
+            print(f"  score std: {best_score_std}")
+            print(f"  score threshold: {score_threshold}")
+            print(
+                f"Parameters: {cv_results.loc[selected_index, all_hyperparameter_names]} | ",
+                f"score: {cv_results.loc[selected_index, f'mean_test_{used_score_name}'][0]}",
+            )
+
+        return selected_index
+
+    return simplest_model_refit_strategy

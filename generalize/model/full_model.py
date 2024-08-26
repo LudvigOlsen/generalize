@@ -36,6 +36,7 @@ def train_full_model(
     process_predictions_fn: Callable = None,
     metric: Union[str, List[str]] = "balanced_accuracy",
     task: str = "binary_classification",
+    refit_fn: Optional[Callable] = None,
     transformers: Optional[List[Tuple[str, BaseEstimator]]] = None,
     train_test_transformers: List[str] = [],
     add_channel_dim: bool = False,
@@ -164,6 +165,9 @@ def train_full_model(
     task : str
         Which task to cross-validate. One of:
             {'binary_classification', 'multiclass_classification', 'regression'}.
+    refit_fn
+        An optional function for finding the best hyperparameter
+        combination from `cv_results_` in grid search.
     transformers: list of tuples with (<name>, <transformer>)
         Transformation steps to add to first part of the pipeline.
         Should handle 2- and/or 3-dimensional arrays. See `DimTransformerWrapper` for this.
@@ -360,13 +364,19 @@ def train_full_model(
     else:
         folder = specified_folds_iterator(folds=split)
 
+    refit = True
+    if refit_fn is not None:
+        refit = refit_fn
+    elif isinstance(metric, list):
+        refit = metric[0]
+
     # Create function that returns a NestableGridSearchCV object
     estimator = NestableGridSearchCV(
         estimator=pipe,
         param_grid=grid,
         scoring=metric,
         n_jobs=num_jobs,
-        refit=metric[0] if isinstance(metric, list) else True,
+        refit=refit,
         weight_loss_by_groups=weight_loss_by_groups,
         weight_loss_by_class=weight_loss_by_class,
         weight_per_split=weight_per_split,

@@ -10,7 +10,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.decomposition import PCA
 
 from generalize.model.cross_validate.nested_cross_validation import nested_cross_validate
-from generalize.model.cross_validate.grid_search import make_lowest_c_refit_strategy
+from generalize.model.cross_validate.grid_search import make_simplest_model_refit_strategy
 
 
 # Models and data (xy) fixtures are located in modeling/conftest.py
@@ -459,7 +459,7 @@ def test_nested_cross_validate_binary_classification(xy_binary_classification, L
     cv_out = nested_cross_validate(
         x=x, y=y, model=model, grid=grid,
         positive=1, k_outer=3, k_inner=3, inner_metric='balanced_accuracy', 
-        refit=make_lowest_c_refit_strategy(c_name="model__C", score_name="balanced_accuracy"),
+        refit=make_simplest_model_refit_strategy(main_var="model__C", score_name="balanced_accuracy"),
         task='binary_classification', reps=num_reps, num_jobs=1, seed=seed,
         tmp_path=tmp_path
     )
