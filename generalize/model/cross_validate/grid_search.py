@@ -607,11 +607,11 @@ def make_simplest_model_refit_strategy(
             )
         ].copy()
 
-        # Only keep solutions where the `other_vars`
+        # Only keep solutions where all specified variables
         # are equal to or higher/lower (specified per var)
         # than the best solution
         if other_vars is not None:
-            for var_nm, var_direction in reversed(other_vars):
+            for var_nm, var_direction in reversed(other_vars) + [main_var]:
                 made_threshold_cv_results = made_threshold_cv_results.loc[
                     get_direction_fn(var_direction)(
                         made_threshold_cv_results[var_nm],
@@ -622,16 +622,11 @@ def make_simplest_model_refit_strategy(
                     ascending=var_direction == "minimize",
                     kind="stable",  # NOTE: Required for iterative sorting!
                 )
+        print(made_threshold_cv_results)
 
-        selected_index = (
-            made_threshold_cv_results.sort_values(
-                by=main_var[0],
-                ascending=score_direction == "minimize",
-                kind="stable",  # NOTE: Required for iterative sorting!
-            )
-            .reset_index(drop=True)
-            .loc[0, "original_index"]
-        )
+        selected_index = made_threshold_cv_results.reset_index(drop=True).loc[
+            0, "original_index"
+        ]
 
         if messenger.verbose:
             messenger("simplest_model_refit_strategy: ")
