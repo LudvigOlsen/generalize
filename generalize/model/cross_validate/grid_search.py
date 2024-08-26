@@ -638,7 +638,7 @@ def make_simplest_model_refit_strategy(
 
             messenger("Best model", add_indent=2)
             messenger(
-                f"Parameters: {cv_results.loc[best_score_index, all_hyperparameter_names].to_dict('records')[0]}",
+                f"Parameters: {cv_results.loc[best_score_index, all_hyperparameter_names].to_dict()}",
                 add_indent=4,
             )
             messenger(
@@ -648,7 +648,7 @@ def make_simplest_model_refit_strategy(
 
             messenger("Selected model")
             messenger(
-                f"Parameters: {cv_results.loc[selected_index, all_hyperparameter_names].to_dict('records')[0]}",
+                f"Parameters: {cv_results.loc[selected_index, all_hyperparameter_names].to_dict()}",
                 add_indent=4,
             )
             messenger(
