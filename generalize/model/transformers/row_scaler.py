@@ -27,7 +27,7 @@ class RowScaler(TransformerMixin, BaseEstimator):
             When `feature_groups` are specified, can be a list
             with one metric per feature group.
         scale
-            What metric to scale by. One of {"std", "iqr", "mad", "mean", "median"}.
+            What metric to scale by. One of {"std", "iqr", "mad", "mean", "median", "sum"}.
             When `feature_groups` are specified, can be a list
             with one metric per feature group.
         feature_groups
@@ -101,7 +101,7 @@ class RowScaler(TransformerMixin, BaseEstimator):
         )
         self._check_param_arg(
             arg=scale,
-            valid_options={"std", "iqr", "mad", "mean", "median"},
+            valid_options={"std", "iqr", "mad", "mean", "median", "sum"},
             arg_name="scale",
         )
 
@@ -262,6 +262,8 @@ class RowScaler(TransformerMixin, BaseEstimator):
                 scaling_factors = np.mean(X_subset, axis=-1)
             elif scale == "median":
                 scaling_factors = np.median(X_subset, axis=-1)
+            elif scale == "sum":
+                scaling_factors = np.sum(X_subset, axis=-1)
 
         if center_feature is not None:
             centers = center_feature
