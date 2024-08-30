@@ -26,6 +26,8 @@ from generalize.model.utils import detect_train_only, add_split_to_groups
 
 # TODO Consider order of the arguments
 # TODO Should outer_split be allowed to have a split per repetition?
+# TODO Add option to retrieve an attribute from the pipeline. E.g. "nmf__H" for NMF components.
+#      Should probably be a list of attribute names to extract from "best_estimator_" objects
 
 
 def nested_cross_validate(
@@ -420,7 +422,7 @@ def nested_cross_validate(
     # Ensure grid names point to their pipeline step
     pipeline_keys = list(pipe.named_steps.keys())
     for key in grid.keys():
-        if not "__" in key or key.split("__")[0] not in pipeline_keys:
+        if "__" not in key or key.split("__")[0] not in pipeline_keys:
             messenger(f"Pipeline keys for debugging:\n{pipeline_keys}")
             raise ValueError(
                 f"Grid keys must be prefixed by either 'model__' or "
@@ -1028,7 +1030,7 @@ def _get_inner_results(
 
         # Change random IDs to letter IDs (AA, AB, AC, ...)
         for in_res, in_coefs in zip(inner_results, best_coefficients):
-            if not "random_id" in in_res:
+            if "random_id" not in in_res:
                 messenger("Bad inner results data frame: ", in_res)
                 with messenger.indentation(add_indent=2):
                     messenger("with column names: ", in_res.columns)

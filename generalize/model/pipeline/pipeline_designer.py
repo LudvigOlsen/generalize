@@ -5,7 +5,7 @@ from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import FunctionTransformer
-from sklearn.base import BaseEstimator
+
 
 from generalize.model.transformers import (
     DimTransformerWrapper,
@@ -56,7 +56,6 @@ def _identity(x):
 
 
 class PipelineDesigner:
-
     # name -> (transformer, kwargs)
     PRECONFIGURED_TRANSFORMERS: Dict[str, Tuple[Callable, Dict[str, Any]]] = {
         "identity": (
