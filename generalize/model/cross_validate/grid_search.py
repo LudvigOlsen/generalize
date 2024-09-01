@@ -11,8 +11,10 @@ from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import get_scorer
 from utipy import Messenger, check_messenger
+from copy import deepcopy
 
 from generalize.model.utils.weighting import calculate_sample_weight
+from generalize.model.pipeline.pipelines import AttributeToDataFrameExtractor
 
 
 class NestableGridSearchCV(GridSearchCV):
@@ -35,6 +37,7 @@ class NestableGridSearchCV(GridSearchCV):
         error_score: Union[Number, str] = np.nan,
         return_train_score: bool = False,
         seed_callback_name: str = "fix_random_seed",
+        store_attributes: List[AttributeToDataFrameExtractor] = None,
         save_cv_results_path: Optional[Union[str, pathlib.Path]] = None,
         messenger: Optional[Callable] = Messenger(verbose=True, indent=0, msg_fn=print),
     ) -> None:
@@ -63,6 +66,10 @@ class NestableGridSearchCV(GridSearchCV):
         seed_callback_name : str
             Name of callback to set seed in.
             For skorch models only.
+        store_attributes
+            List of `AttributeToDataFrameExtractor` instances
+            for extracting attributes from the `.best_estimator_`
+            and converting them to `pandas.DataFrame`s to store.
         save_cv_results_path : str or pathlib.Path
             Path to csv file to append `.cv_results_` dict to.
             Is appended with headers, allowing for multiple threads
@@ -96,6 +103,7 @@ class NestableGridSearchCV(GridSearchCV):
         self.split_weights = split_weights
         self.seed = seed
         self.seed_callback_name = seed_callback_name
+        self.store_attributes = store_attributes
         self.save_cv_results_path = save_cv_results_path
 
         # Check messenger (always returns Messenger instance)
@@ -200,7 +208,7 @@ class NestableGridSearchCV(GridSearchCV):
                         )
                     )
                     super().fit(X=X, y=y, groups=groups, **fit_params)
-                except RuntimeError as e:
+                except RuntimeError:
                     raise
                 except BaseException as e:
                     fit_problems.append(
@@ -285,7 +293,7 @@ class NestableGridSearchCV(GridSearchCV):
                     selection_idx = self.refit(self.cv_results_.copy())
                     cv_results_df["selected_parameters"] = False
                     cv_results_df.loc[selection_idx, "selected_parameters"] = True
-                except:
+                except:  # noqa: E722
                     # When refit is not a function, etc.
                     # we don't add the selected model parameters
                     pass
@@ -324,15 +332,34 @@ class NestableGridSearchCV(GridSearchCV):
                         best_coeffs = pad_best_coeffs(
                             new_data=best_coeffs, total_columns=2000
                         )
-                    except:
+                    except:  # noqa: E722
                         pass
 
                     best_coeffs["random_id"] = random_id
 
                     # Save data frame to disk
                     best_coeffs.to_csv(
-                        str(save_coeffs_path), mode="a", index=False, header=False
+                        str(save_coeffs_path),
+                        mode="a",
+                        index=False,
+                        header=False,
                     )
+
+                if self.store_attributes:
+                    pipe_copy = deepcopy(self.best_estimator_)
+                    for extractor in self.store_attributes:
+                        save_attr_path = pathlib.Path(
+                            self.save_cv_results_path
+                        ).with_suffix(f".{extractor.name}.csv")
+                        attribute_df = extractor(pipe_copy)
+                        attribute_df["random_id"] = random_id
+                        # Save data frame to disk
+                        attribute_df.to_csv(
+                            str(save_attr_path),
+                            mode="a",
+                            index=False,
+                            header=False,
+                        )
 
             except BaseException as e:
                 self.messenger(

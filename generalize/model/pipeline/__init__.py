@@ -1,2 +1,2 @@
 from .pipeline_designer import PipelineDesigner
-from .pipelines import NestablePipeline
+from .pipelines import NestablePipeline, AttributeToDataFrameExtractor

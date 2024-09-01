@@ -21,7 +21,10 @@ from generalize.model.cross_validate.kfolder import (
 )
 from generalize.evaluate.evaluate_repetitions import evaluate_repetitions
 from generalize.utils.missing_data import remove_missing_data
-from generalize.model.pipeline.pipelines import create_pipeline
+from generalize.model.pipeline.pipelines import (
+    AttributeToDataFrameExtractor,
+    create_pipeline,
+)
 from generalize.model.utils import detect_train_only, add_split_to_groups
 
 # TODO Consider order of the arguments
@@ -66,6 +69,7 @@ def nested_cross_validate(
     seed: int = 1,
     grid_error_score: Union[str, int, float] = np.nan,
     cv_error_score: Union[str, int, float] = np.nan,
+    store_attributes: List[AttributeToDataFrameExtractor] = None,
     identifier_cols_dict: dict = None,
     eval_idx_colname: str = "Repetition",
     messenger: Optional[Callable] = Messenger(verbose=True, indent=0, msg_fn=print),
@@ -225,6 +229,10 @@ def nested_cross_validate(
     cv_error_score : int, float or str
         Error score passed to `cross_validate`. Use `"raise"` to get errors.
         See `cross_validate` from scikit-learn for more details.
+    store_attributes : List[AttributeToDataFrameExtractor]
+        List of `AttributeToDataFrameExtractor` instances
+        for extracting attributes from the `.best_estimator_`
+        and converting them to `pandas.DataFrame`s to store.
     identifier_cols_dict : Dict[str, str]
         Dict mapping colname -> string to add to the results
         and one-vs-all data frames *after* repetitions are concatenated.
@@ -442,6 +450,7 @@ def nested_cross_validate(
         weight_per_split=weight_per_split,
         split_weights=split_weights,
         messenger=messenger,
+        store_attributes=store_attributes,
         error_score=grid_error_score,
     )
 
@@ -494,9 +503,10 @@ def nested_cross_validate(
         ]
 
         # Load and format inner results
-        inner_results, best_coeffs = _get_inner_results(
+        inner_results, best_coeffs, read_attributes = _get_inner_results(
             inner_results_paths=inner_results_paths,
             tmp_path=tmp_path,
+            store_attributes=store_attributes,
             messenger=messenger,
         )
 
@@ -595,6 +605,7 @@ def nested_cross_validate(
         "Outer Train Scores": train_scores_list,
         "Inner Results": inner_results,
         "Best Coefficients": best_coeffs,
+        "Custom Attributes": read_attributes,
         "Warnings": warnings_list,
     }
 
@@ -974,7 +985,7 @@ def _check_args_for_nested_cv(
 
 
 def _get_inner_results(
-    inner_results_paths, tmp_path, messenger
+    inner_results_paths, tmp_path, store_attributes, messenger
 ) -> Tuple[List[pd.DataFrame], List[Optional[pd.DataFrame]]]:
     # Handle grid search cv results dicts
     inner_results = None
@@ -1006,7 +1017,8 @@ def _get_inner_results(
         try:
             best_coefficients = [
                 pd.read_csv(
-                    path / "inner_cv_results.best_coefficients.csv", header=None
+                    path / "inner_cv_results.best_coefficients.csv",
+                    header=None,
                 )
                 for path in inner_results_paths
             ]
@@ -1028,8 +1040,44 @@ def _get_inner_results(
             # a list of None's to loop over with zip
             best_coefficients = [None for _ in inner_results]
 
+        read_attributes = []
+        if store_attributes is not None:
+            for extractor in store_attributes:
+                try:
+                    extracted_attrs = [
+                        pd.read_csv(
+                            path / f"inner_cv_results.{extractor.name}.csv",
+                            header=None,
+                        )
+                        for path in inner_results_paths
+                    ]
+                    for extracted_attr in extracted_attrs:
+                        extracted_attr.columns = [
+                            str(i) for i in range(bcoeffs.shape[-1] - 1)
+                        ] + ["random_id"]
+                except BaseException as e:
+                    messenger(
+                        f"Failed to read {extractor.name}: {str(e)}",
+                        add_msg_fn=warnings.warn,
+                    )
+                    available_files = [
+                        str(p) for p in inner_results_paths[0].glob("*.csv")
+                    ]
+                    messenger(
+                        f"{len(available_files)} available .csv files in tmp folder: "
+                        f"{', '.join(available_files)}",
+                        add_msg_fn=warnings.warn,
+                    )
+                    # If the attribute is not found, we create
+                    # a list of None's to loop over with zip
+                    extracted_attrs = [None for _ in inner_results]
+
+                read_attributes.append((extractor.name, extracted_attrs))
+
         # Change random IDs to letter IDs (AA, AB, AC, ...)
-        for in_res, in_coefs in zip(inner_results, best_coefficients):
+        for in_res, in_coefs, *in_attrs in zip(
+            inner_results, best_coefficients, *read_attributes
+        ):
             if "random_id" not in in_res:
                 messenger("Bad inner results data frame: ", in_res)
                 with messenger.indentation(add_indent=2):
@@ -1044,6 +1092,7 @@ def _get_inner_results(
             in_res.rename(
                 columns={"random_id": "outer_split (unordered)"}, inplace=True
             )
+
             if in_coefs is not None:
                 in_coefs.replace(
                     {
@@ -1057,7 +1106,20 @@ def _get_inner_results(
                     columns={"random_id": "outer_split (unordered)"}, inplace=True
                 )
 
-    return inner_results, best_coefficients
+            for _, in_attr_df in in_attrs:
+                in_attr_df.replace(
+                    {
+                        "random_id": {
+                            n: l for n, l in zip(unique_random_ids, letter_ids)
+                        }
+                    },
+                    inplace=True,
+                )
+                in_attr_df.rename(
+                    columns={"random_id": "outer_split (unordered)"}, inplace=True
+                )
+
+    return inner_results, best_coefficients, read_attributes
 
 
 def _del_tmp_subdir(tmp_path, tmp_subdir_path, messenger):

@@ -1,10 +1,12 @@
 import warnings
-from typing import List, Optional, Tuple, Union, Callable, Dict
+from typing import List, Optional, Tuple, Callable, Dict, Any
 import json
 import numpy as np
+import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
+from nattrs import nested_getattr
 from utipy import Messenger
 
 from generalize.model.pipeline.pipeline_designer import PipelineDesigner
@@ -28,8 +30,8 @@ class NestablePipeline(Pipeline):
     ) -> None:
         """
         Pipeline class with additional functionality.
-        
-        Sets the `is_seedable` attribute (skorch models) since 
+
+        Sets the `is_seedable` attribute (skorch models) since
         assigning the attribute to a pipeline object does not seem
         to work with the cloning in the cross-validation.
 
@@ -225,6 +227,100 @@ class NestablePipeline(Pipeline):
         Custom string representation that does not use truncation.
         """
         return pipeline_to_str(self)
+
+
+class AttributeToDataFrameExtractor:
+    def __init__(
+        self,
+        name: str,
+        attr_path: str,
+        to_df_fn: Optional[Callable] = None,
+        pad_to: Optional[int] = None,
+    ) -> None:
+        """
+        Class to extract an attribute from a pipeline and
+        convert it to a pandas data frame.
+
+        When the conversion to a data frame cannot be done with `pandas.DataFrame()`
+        please provide the `to_df_fn` function which takes in the
+        attribute and should return a pandas data frame.
+
+        name
+            Name of the attribute as you want it in filepaths.
+            Should be suitable for filenames.
+        pad_to
+            Whether to pad the resulting data frame column-wise with NaNs
+            to get `pad_to` columns. This is for when different pipeline
+            instances can get a different number of columns for this attribute.
+        """
+        self.name = name.replace(" ", "_")
+        self.attr_path = attr_path
+        self.to_df_fn = to_df_fn
+        self.pad_to = pad_to
+
+    def __call__(self, pipe: Pipeline) -> pd.DataFrame:
+        attr = self._extract_attribute(pipe)
+        attr_df = self._convert_to_df(attr)
+        if self.pad_to is not None:
+            attr_df = AttributeToDataFrameExtractor.pad(
+                attr_df,
+                total_columns=self.pad_to,
+            )
+        return attr_df
+
+    def _extract_attribute(self, pipe: Pipeline) -> Any:
+        estimator_name = self.attr_path.split(".")[0]
+        attr_path = ".".join(self.attr_path.split(".")[1:])
+        try:
+            attr = nested_getattr(
+                pipe.named_steps[estimator_name],
+                attr=attr_path,
+                default="not found",
+            )
+        except Exception as e:  # noqa: E722
+            raise ValueError(f"Failed to extract {self.name} from the pipeline: {e}")
+        if isinstance(attr, str) and attr == "not found":
+            raise ValueError(
+                f"Did not find {self.name} in pipeline. "
+                "Please check `attr_path` is correct."
+            )
+        return attr
+
+    def _convert_to_df(self, attr: Any) -> pd.DataFrame:
+        try:
+            if self.to_df_fn is not None:
+                df = self.to_df_fn(attr)
+            else:
+                df = pd.DataFrame(attr)
+        except Exception as e:  # noqa: E722
+            raise ValueError(
+                f"Failed to convert {self.name} to a `pandas.FataFrame`: {e}"
+            )
+        return df
+
+    @staticmethod
+    def pad(df: pd.DataFrame, total_columns: int = 2000) -> pd.DataFrame:
+        # Get the current maximum column number in the new data
+        max_col_num = max(map(int, df.columns))
+
+        # Determine the starting column number for padding
+        start_col_num = max_col_num + 1
+
+        # Pad the DataFrame to ensure it has total_columns columns
+        if df.shape[1] < total_columns:
+            # Add NaN columns to the new_data DataFrame
+            padding_cols = total_columns - df.shape[1]
+            df = df.reindex(
+                columns=[
+                    *df.columns,
+                    *range(start_col_num, start_col_num + padding_cols),
+                ],
+                fill_value=np.nan,
+            )
+        elif df.shape[1] > total_columns:
+            raise ValueError(f"New data has more than {total_columns} columns")
+
+        return df
 
 
 def create_pipeline(
