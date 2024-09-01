@@ -1053,7 +1053,7 @@ def _get_inner_results(
                     ]
                     for extracted_attr in extracted_attrs:
                         extracted_attr.columns = [
-                            str(i) for i in range(bcoeffs.shape[-1] - 1)
+                            str(i) for i in range(extracted_attr.shape[-1] - 1)
                         ] + ["random_id"]
                 except BaseException as e:
                     messenger(
