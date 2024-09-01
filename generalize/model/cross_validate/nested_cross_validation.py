@@ -1040,7 +1040,7 @@ def _get_inner_results(
             # a list of None's to loop over with zip
             best_coefficients = [None for _ in inner_results]
 
-        read_attributes = []
+        read_attributes = {}
         if store_attributes is not None:
             for extractor in store_attributes:
                 try:
@@ -1072,21 +1072,20 @@ def _get_inner_results(
                     # a list of None's to loop over with zip
                     extracted_attrs = [None for _ in inner_results]
 
-                read_attributes.append((extractor.name, extracted_attrs))
-
-        print(read_attributes)
+                read_attributes[extractor.name] = extracted_attrs
 
         # Change random IDs to letter IDs (AA, AB, AC, ...)
-        for in_res, in_coefs, *in_attrs in zip(
-            inner_results, best_coefficients, *read_attributes
-        ):
+        random_ids_store = {}
+        for idx, (in_res, in_coefs) in enumerate(zip(inner_results, best_coefficients)):
             if "random_id" not in in_res:
                 messenger("Bad inner results data frame: ", in_res)
                 with messenger.indentation(add_indent=2):
                     messenger("with column names: ", in_res.columns)
                 raise RuntimeError("'random_id' was not in saved results.")
-            unique_random_ids = in_res["random_id"].unique()
+            unique_random_ids = sorted(in_res["random_id"].unique())
             letter_ids = letter_strings(n=len(unique_random_ids), upper=True)
+            random_ids_store[idx] = (unique_random_ids, letter_ids)
+
             in_res.replace(
                 {"random_id": {n: l for n, l in zip(unique_random_ids, letter_ids)}},
                 inplace=True,
@@ -1107,11 +1106,10 @@ def _get_inner_results(
                 in_coefs.rename(
                     columns={"random_id": "outer_split (unordered)"}, inplace=True
                 )
+        for _, in_attr_dfs in read_attributes.items():
+            for idx, in_attr_df in enumerate(in_attr_dfs):
+                unique_random_ids, letter_ids = random_ids_store[idx]
 
-            print("attributes:")
-            print(in_attrs)
-            for in_attr_df in in_attrs:
-                print(in_attr_df)
                 in_attr_df.replace(
                     {
                         "random_id": {
