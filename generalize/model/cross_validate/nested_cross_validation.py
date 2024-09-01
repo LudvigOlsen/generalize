@@ -503,7 +503,7 @@ def nested_cross_validate(
         ]
 
         # Load and format inner results
-        inner_results, best_coeffs, read_attributes = _get_inner_results(
+        inner_results, best_coeffs, custom_attributes = _get_inner_results(
             inner_results_paths=inner_results_paths,
             tmp_path=tmp_path,
             store_attributes=store_attributes,
@@ -605,7 +605,7 @@ def nested_cross_validate(
         "Outer Train Scores": train_scores_list,
         "Inner Results": inner_results,
         "Best Coefficients": best_coeffs,
-        "Custom Attributes": read_attributes,
+        "Custom Attributes": custom_attributes,
         "Warnings": warnings_list,
     }
 
@@ -1040,7 +1040,7 @@ def _get_inner_results(
             # a list of None's to loop over with zip
             best_coefficients = [None for _ in inner_results]
 
-        read_attributes = {}
+        custom_attributes = {}
         if store_attributes is not None:
             for extractor in store_attributes:
                 try:
@@ -1072,7 +1072,7 @@ def _get_inner_results(
                     # a list of None's to loop over with zip
                     extracted_attrs = [None for _ in inner_results]
 
-                read_attributes[extractor.name] = extracted_attrs
+                custom_attributes[extractor.name] = extracted_attrs
 
         # Change random IDs to letter IDs (AA, AB, AC, ...)
         random_ids_store = {}
@@ -1106,7 +1106,7 @@ def _get_inner_results(
                 in_coefs.rename(
                     columns={"random_id": "outer_split (unordered)"}, inplace=True
                 )
-        for _, in_attr_dfs in read_attributes.items():
+        for _, in_attr_dfs in custom_attributes.items():
             for idx, in_attr_df in enumerate(in_attr_dfs):
                 unique_random_ids, letter_ids = random_ids_store[idx]
 
@@ -1122,7 +1122,7 @@ def _get_inner_results(
                     columns={"random_id": "outer_split (unordered)"}, inplace=True
                 )
 
-    return inner_results, best_coefficients, read_attributes
+    return inner_results, best_coefficients, custom_attributes
 
 
 def _del_tmp_subdir(tmp_path, tmp_subdir_path, messenger):
