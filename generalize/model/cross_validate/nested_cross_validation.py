@@ -1075,7 +1075,7 @@ def _get_inner_results(
                 read_attributes.append((extractor.name, extracted_attrs))
 
         print(read_attributes)
-        
+
         # Change random IDs to letter IDs (AA, AB, AC, ...)
         for in_res, in_coefs, *in_attrs in zip(
             inner_results, best_coefficients, *read_attributes
@@ -1108,7 +1108,10 @@ def _get_inner_results(
                     columns={"random_id": "outer_split (unordered)"}, inplace=True
                 )
 
-            for _, in_attr_df in in_attrs:
+            print("attributes:")
+            print(in_attrs)
+            for in_attr_df in in_attrs:
+                print(in_attr_df)
                 in_attr_df.replace(
                     {
                         "random_id": {
