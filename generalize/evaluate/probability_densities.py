@@ -56,7 +56,7 @@ class ProbabilityDensities:
         self
         """
         self.densities = ProbabilityDensities._calculate_densities(
-            df=df,
+            df=df.copy(),
             target_col=target_col,
             probability_col=probability_col,
             group_cols=group_cols,
@@ -118,6 +118,10 @@ class ProbabilityDensities:
     def _calculate_densities(df, target_col, probability_col, group_cols=None):
         if df.empty:
             raise ValueError("`df` was empty.")
+
+        # Convert targets to strings
+        df[target_col] = df[target_col].astype("string")
+
         if group_cols is not None and group_cols:
             # Calculate densities per group
             group_densities = []
