@@ -809,11 +809,111 @@ class Evaluator:
             Dict mapping column name -> string
             to add to the prediction data frame
             *after* repetitions are concatenated.
+
+        """
+
+        all_predictions = Evaluator.combine_predictions(
+            predictions_list=predictions_list,
+            targets=targets,
+            targets_list=targets_list,
+            groups=groups,
+            groups_list=groups_list,
+            sample_ids=sample_ids,
+            split_indices_list=split_indices_list,
+            target_idx_to_target_label_map=target_idx_to_target_label_map,
+            positive_class=positive_class,
+            idx_names=idx_names,
+            idx_colname=idx_colname,
+            identifier_cols_dict=identifier_cols_dict,
+        )
+
+        Evaluator.save_combined_predictions(
+            combined_predictions=all_predictions,
+            out_path=out_path,
+        )
+
+    @staticmethod
+    def save_combined_predictions(
+        combined_predictions: pd.DataFrame,
+        out_path: Union[pathlib.Path, str],
+    ) -> None:
+        """
+        Save already combined predictions,
+        e.g. as combined with `.combine_predictions()`
+
+        Parameters
+        ----------
+        combined_predictions
+            Data frame with predictions, targets, etc.
+            to save to disk.
+        out_path
+            Path to the directory to save the predictions in.
         """
 
         # Create out_path directory if necessary
         mk_dir(path=out_path, arg_name="out_path")
         out_path = pathlib.Path(out_path)
+
+        # Save predictions to disk
+        combined_predictions.to_csv(out_path / "predictions.csv", index=False)
+
+    @staticmethod
+    def combine_predictions(
+        predictions_list: List[Union[np.ndarray, pd.DataFrame]] = None,
+        targets: Optional[Union[np.ndarray, list]] = None,
+        targets_list: Optional[List[Union[np.ndarray, list]]] = None,
+        groups: Optional[Union[np.ndarray, list]] = None,
+        groups_list: Optional[List[Union[np.ndarray, list]]] = None,
+        sample_ids: Optional[Union[np.ndarray, list]] = None,
+        split_indices_list: Optional[List[np.ndarray]] = None,
+        target_idx_to_target_label_map: Optional[Dict[int, str]] = None,
+        positive_class: Optional[str] = None,
+        idx_names: Optional[List[str]] = None,
+        idx_colname: str = "Repetition",
+        identifier_cols_dict: Optional[Dict[str, Union[str, numbers.Number]]] = None,
+    ) -> pd.DataFrame:
+        """
+        Combine a list of predictions.
+        Used to prepare the predictions to be saved as well.
+
+        Parameters
+        ----------
+        predictions_list
+            List of prediction arrays / data frames.
+        targets
+            Target values. Expected to have same length
+            and order as each prediction set.
+        groups
+            Sample groups (like subject IDs).
+        split_indices_list
+            Lists / `numpy.ndarray`s with split indices
+            (i.e. fold index per observation).
+            The order of both the lists and list elements are assumed
+            to match `predictions_list`.
+        target_idx_to_target_label_map
+            Mapping of target class indices to their names (labels).
+            Is used to rename probability columns
+            in multiclass classification.
+        positive_class
+            Name of the predicted class when only one
+            probability class is present.
+            Optional. Used to rename probability column.
+        idx_names
+            Names of evaluations (repetitions).
+            When `None`, a simple index (0 -> N-1) is used.
+        idx_colname
+            Name of prediction set index column
+            in the final, concatenated data frame.
+        identifier_cols_dict
+            Dict mapping column name -> string
+            to add to the prediction data frame
+            *after* repetitions are concatenated.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The data frame with all the predictions, targets, etc.
+        """
 
         if sum([targets is not None, targets_list is not None]) > 1:
             raise ValueError(
@@ -884,8 +984,7 @@ class Evaluator:
         # Add the identifier columns
         add_identifier_columns(all_predictions, identifier_cols_dict)
 
-        # Save predictions to disk
-        all_predictions.to_csv(out_path / "predictions.csv", index=False)
+        return all_predictions
 
     @staticmethod
     def get_threshold_at_specificity(
