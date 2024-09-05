@@ -25,7 +25,11 @@ from generalize.model.pipeline.pipelines import (
     AttributeToDataFrameExtractor,
     create_pipeline,
 )
-from generalize.model.utils import detect_train_only, add_split_to_groups
+from generalize.model.utils import (
+    detect_train_only,
+    add_split_to_groups,
+    detect_no_evaluation,
+)
 
 # TODO Consider order of the arguments
 # TODO Should outer_split be allowed to have a split per repetition?
@@ -113,6 +117,13 @@ def nested_cross_validate(
         for training. When `outer_split` is specified, indices that are
         specified as "train only" in either are used only during training
         for both the inner and outer loop! NOTE: Beware of introducing train/test leakage.
+        **No Evaluation**:  Wrap a group identifier in the `"no_eval(ID)"` string
+        (where `ID` is the group identifier) for samples that should not be included
+        in the outer loop evaluation. These samples are removed in-between prediction
+        and evaluation. E.g. used for samples that were used for calculating batch
+        correction during prediction and should thus not be evaluated on.
+        NOTE: Max. one of the "train_only()" and "no_eval()" wrappers can
+        be used for the same sample (train-only already leads to no evaluation).
     positive : str, int or `None`
         Value that the positive class has in `y`.
         Required when `task` is 'binary_classification' and ignored otherwise.
@@ -390,6 +401,11 @@ def nested_cross_validate(
         messenger=messenger,
     )
 
+    groups, no_eval_indices = detect_no_evaluation(
+        groups=groups,
+        messenger=messenger,
+    )
+
     # Add splits to groups when necessary
     groups, outer_split = add_split_to_groups(
         groups=groups,
@@ -460,7 +476,7 @@ def nested_cross_validate(
     )
 
     # Add the confounders to the data
-    # `create_pipeline()` will ensure that
+    # NOTE: You can use the `MeanDuringTest` transformer to ensure that
     # they get the average column value during testing
     # to remove their information from the test predictions
     if confounders is not None:
@@ -528,6 +544,35 @@ def nested_cross_validate(
     train_scores_list = [res["train_score"] for res in cv_outputs_list]
     test_indices_list = [res["test_indices"] for res in cv_outputs_list]
     warnings_list = [res.get("warnings", []) for res in cv_outputs_list]
+
+    if no_eval_indices:
+        # Find out which elements to remove before evaluation
+        no_eval_indices_to_remove = [
+            np.argwhere(np.isin(test_indices, no_eval_indices)).flatten()
+            for test_indices in test_indices_list
+        ]
+        # Remove test indices for no-evaluation samples
+        test_indices_list = [
+            np.delete(test_indices, rm_indices, axis=0)
+            for test_indices, rm_indices in zip(
+                test_indices_list, no_eval_indices_to_remove
+            )
+        ]
+        # Remove predictions for no-evaluation samples
+        predictions_list = [
+            np.delete(predictions, rm_indices, axis=0)
+            for predictions, rm_indices in zip(
+                predictions_list, no_eval_indices_to_remove
+            )
+        ]
+        if split_indices_list[0] is not None:
+            # Remove predictions for no-evaluation samples
+            split_indices_list = [
+                np.delete(split_indices, rm_indices, axis=0)
+                for split_indices, rm_indices in zip(
+                    split_indices_list, no_eval_indices_to_remove
+                )
+            ]
 
     # Process the predictions
     # NOTE: Seems it cannot be added to the pipeline

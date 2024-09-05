@@ -24,14 +24,19 @@ def detect_train_only(
 
     messenger("Detecting train-only data points")
     if groups is not None:
-        groups = np.asarray([str(g) for g in groups], dtype=object)
+        groups = np.asarray([str(g).strip() for g in groups], dtype=object)
         training_group_flags = ["train_only" in g for g in groups]
-        training_groups = set(groups[training_group_flags])
+        training_groups = groups[training_group_flags]
         messenger(
-            f"Detected {len(training_groups)} unique train-only groups "
+            f"Detected {len(set(training_groups))} unique train-only groups "
             f"({sum(training_group_flags)} data points)",
             indent=2,
         )
+        if any(["no_eval(" in g for g in training_groups]):
+            raise ValueError(
+                "A train-only group also contained the `no_eval` wrapper. "
+                "Only one of these group wrappers can be applied per group."
+            )
     elif weight_per_split and split is not None:
         groups = np.asarray([str(g) for g in np.arange(len(y))], dtype=object)
         training_group_flags = [False for _ in groups]  # All False

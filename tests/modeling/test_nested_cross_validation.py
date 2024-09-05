@@ -1163,6 +1163,58 @@ def test_nested_cross_validate_binary_classification_with_groups(xy_binary_class
 
         assert False, "Check that sample weights were printed and disable test"
 
+@ignore_warnings(category=ConvergenceWarning)
+def test_nested_cross_validate_no_eval(xy_binary_classification_xl, LogisticRegressionClassifierPartial, tmp_path, create_splits_fn):
+
+    #### No-evaluation groups
+
+    seed = 15
+    np.random.seed(seed)
+
+    x = xy_binary_classification_xl["x"]
+    y = xy_binary_classification_xl["y"]
+    num_samples = xy_binary_classification_xl["num_samples"]
+
+    num_reps = 2
+
+    groups = np.sort(np.concatenate([np.arange(num_samples // 3) for _ in range(3)]))
+    groups[np.isin(groups, range(47, 50))] *= -1 # All of "D" split
+    groups = np.asarray([f"no_eval({-g})" if g < 0 else str(g) for g in groups])
+
+    # print([(s,g) for s,g in zip(splits, groups)])
+
+    # Init model object
+    model = LogisticRegressionClassifierPartial["model"](random_state=seed)
+    grid = LogisticRegressionClassifierPartial["grid_binary"]
+
+    seed = 15
+
+    cv_out = nested_cross_validate(
+        x=x, y=y, model=model, grid=grid, groups=groups,
+        positive=1, k_inner=3, k_outer=3,
+        eval_by_split=False, inner_metric='balanced_accuracy',
+        task='binary_classification', reps=num_reps, 
+        num_jobs=1, seed=seed, tmp_path=tmp_path, 
+        cv_error_score="raise"
+    )
+
+    # print(cv_out)
+
+    # We set 10 groups of 3 to train_only
+    assert len(cv_out['Outer Predictions'][0]) == num_samples-3*3
+    assert len(cv_out['Outer Indices'][0]) == num_samples-3*3
+    assert len(cv_out['Outer Splits'][0]) == num_samples-3*3
+    assert len(cv_out['Outer Groups'][0]) == num_samples-3*3
+    assert len(cv_out['Outer Targets'][0]) == num_samples-3*3
+
+    # None of the no-eval indices should be present in outer indices
+    assert not set(cv_out['Outer Indices'][0]).intersection(set(np.where(np.isin(groups, [47,48,49]))[0]))
+    
+    # We should just have 3 splits as that's what was specified
+    assert set(cv_out['Outer Splits'][0]) == {0,1,2}
+
+
+
 
 @ignore_warnings(category=ConvergenceWarning)
 def test_nested_cross_validate_binary_classification_train_only_paths(xy_binary_classification_xl, SavingLogisticRegressionClassifierPartial, tmp_path):
