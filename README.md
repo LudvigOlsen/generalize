@@ -1,4 +1,4 @@
-# Generalize <a href='https://github.com/LudvigOlsen/generalize'><img src='generalize_242x280_250dpi.png' align="right" height="140" /></a>
+# Generalize <a href='https://github.com/LudvigOlsen/generalize'><img src='https://raw.githubusercontent.com/LudvigOlsen/generalize/master/generalize_242x280_250dpi.png' align="right" height="140" /></a>
 
 **Author:** [Ludvig R. Olsen](https://www.ludvigolsen.dk/) ( <r-pkgs@ludvigolsen.dk> )
 

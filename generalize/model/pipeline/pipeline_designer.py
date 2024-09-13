@@ -12,6 +12,7 @@ from generalize.model.transformers import (
     FlattenFeatureSetsTransformer,
     RowScaler,
     IndexFeatureSelector,
+    IndexFeatureRemover,
     MeanDuringTest,
 )
 
@@ -70,6 +71,8 @@ class PipelineDesigner:
         ),
         "flatten_feature_sets": (FlattenFeatureSetsTransformer, {}),
         "mean_during_test": (MeanDuringTest, {}),
+        "feature_selector": (IndexFeatureSelector, {}),
+        "feature_remover": (IndexFeatureRemover, {}),
     }
 
     def __init__(self) -> None:
