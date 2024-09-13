@@ -145,11 +145,16 @@ def test_row_scaler_transformer_center_features():
                     "center": "mean",
                     "scale": None,
                     "feature_groups": [
-                        [2, 3, 4, 5],
-                        [6, 7, 8, 9],
+                        [0, 2, 3, 4, 5],
+                        [1, 6, 7, 8, 9],
                         [10, 11, 12, 13, 14],
                     ],
-                    "center_by_features": [0, 1, -1],
+                    # group one is centered by 0, group two is centered by 1, and group 3 uses mean of row
+                    "center_by_features": [
+                        0,
+                        1,
+                    ],
+                    "rm_center_by_features": False,
                 },
             ),
         )
@@ -167,7 +172,8 @@ def test_row_scaler_transformer_center_features():
     # (That the two arrays are not almost equal!)
     assert_raises(AssertionError, assert_array_almost_equal, x_tr, x)
 
-    assert_array_almost_equal(x_tr[:, :2], x[:, :2])  # No change
+    # No change for the first two, since only single features were used per feature group
+    assert_array_almost_equal(x_tr[:, :2], x[:, :2])
     assert_array_almost_equal(x_tr[:, 2:6], x[:, 2:6] - x[:, [0]])  # Centered by f0
     assert_array_almost_equal(x_tr[:, 6:10], x[:, 6:10] - x[:, [1]])  # Centered by f1
     assert (
@@ -185,11 +191,11 @@ def test_row_scaler_transformer_center_features():
                     "center": "mean",
                     "scale": "std",
                     "feature_groups": [
-                        [2, 3, 4, 5],
-                        [6, 7, 8, 9],
+                        [0, 2, 3, 4, 5],
+                        [1, 6, 7, 8, 9],
                         [10, 11, 12, 13, 14],
                     ],
-                    "center_by_features": [0, 1, -1],
+                    "center_by_features": [0, 1],
                 },
             ),
         )
@@ -212,7 +218,7 @@ def test_row_scaler_transformer_center_features():
     assert np.round(np.mean(np.std(x_tr[:, 6:10], axis=-1)), decimals=10) == 1.0
     assert np.round(np.mean(np.std(x_tr[:, 10:15], axis=-1)), decimals=10) == 1.0
 
-    # SAME - but with single center by feature
+    # Removing centering features
 
     # Pipeline steps
     steps = [
@@ -222,7 +228,49 @@ def test_row_scaler_transformer_center_features():
                 RowScaler,
                 kwargs={
                     "scale": "std",
-                    "center_by_features": 0,
+                    "center_by_features": [0],
+                    "rm_center_by_features": True,
+                },
+            ),
+        )
+    ]
+
+    pipe = Pipeline(steps=steps)
+    pipe.fit(x, y)
+
+    x_tr = pipe.transform(x)
+
+    # We should have one feature less
+    assert x_tr.shape[-1] + 1 == x.shape[-1]
+
+
+def test_row_scaler_transformer_scaling_features():
+    # Data
+    np.random.seed(1)
+    x = np.random.normal(size=(35, 15))
+    y = np.random.choice([0, 1], size=35)
+
+    # Pipeline steps
+    # scaling only
+    steps = [
+        (
+            "scale_rows",
+            DimTransformerWrapper(
+                RowScaler,
+                kwargs={
+                    "center": None,
+                    "scale": "mean",
+                    "feature_groups": [
+                        [0, 2, 3, 4, 5],
+                        [1, 6, 7, 8, 9],
+                        [10, 11, 12, 13, 14],
+                    ],
+                    # group one is scaled by 0, group two is scaled by 1, and group 3 scaled by mean of values
+                    "scale_by_features": [
+                        0,
+                        1,
+                    ],
+                    "rm_scale_by_features": False,
                 },
             ),
         )
@@ -240,37 +288,13 @@ def test_row_scaler_transformer_center_features():
     # (That the two arrays are not almost equal!)
     assert_raises(AssertionError, assert_array_almost_equal, x_tr, x)
 
-    assert_array_almost_equal(x_tr[:, :1], x[:, :1])  # No change
-    exp_rest = x[:, 1:15] - np.expand_dims(x[:, 0], axis=-1)
-    exp_rest /= np.expand_dims(np.std(x[:, 1:15], axis=-1), axis=-1)
-    assert_array_almost_equal(x_tr[:, 1:15], exp_rest)  # Centered by f0
-
-    assert np.round(np.mean(np.std(x_tr[:, 1:15], axis=-1)), decimals=10) == 1.0
-
-    # Removing centering features
-
-    # Pipeline steps
-    steps = [
-        (
-            "scale_rows",
-            DimTransformerWrapper(
-                RowScaler,
-                kwargs={
-                    "scale": "std",
-                    "center_by_features": 0,
-                    "rm_center_by_features": True,
-                },
-            ),
-        )
-    ]
-
-    pipe = Pipeline(steps=steps)
-    pipe.fit(x, y)
-
-    x_tr = pipe.transform(x)
-
-    # We should have one feature less
-    assert x_tr.shape[-1] + 1 == x.shape[-1]
+    # No change for the first two, since only single features were used per feature group
+    assert_array_almost_equal(x_tr[:, :2], x[:, :2])
+    assert_array_almost_equal(x_tr[:, 2:6], x[:, 2:6] / x[:, [0]])  # Scaled by f0
+    assert_array_almost_equal(x_tr[:, 6:10], x[:, 6:10] / x[:, [1]])  # Scaled by f1
+    assert (
+        np.round(np.mean(np.mean(x_tr[:, 10:15], axis=-1)), decimals=10) == 1.0
+    )  # Scaled by mean
 
 
 def test_row_scaler_transformer_in_gridsearch():
