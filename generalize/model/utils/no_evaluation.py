@@ -14,6 +14,8 @@ def detect_no_evaluation(
     if groups is not None:
         groups = np.asarray([str(g).strip() for g in groups], dtype=object)
         no_eval_group_flags = ["no_eval" in g for g in groups]
+        if not any(no_eval_group_flags):
+            return groups, []
         no_eval_group_indices = np.argwhere(no_eval_group_flags).flatten().tolist()
         no_eval_groups = groups[no_eval_group_flags]
         messenger(
