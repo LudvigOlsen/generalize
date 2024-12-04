@@ -188,10 +188,6 @@ def cross_validate_univariate_models(
             if eval_by_split and split is not None:
                 out = _add_splits_metrics(cv_out, out)
 
-        for col in ["Num Classes", "Positive Class"]:
-            if col in out.columns:
-                move_column_inplace(out, col, len(out.columns) - 1)
-
         if add_info_cols:
             out.loc[:, "Num Repetitions"] = reps
             out.loc[:, "Feature Index"] = feature_idx
@@ -207,7 +203,7 @@ def cross_validate_univariate_models(
 
     # Run cross-validation on each feature separately
     # And concatenate the output data frames
-    return pd.concat(
+    cv_all = pd.concat(
         [
             _call_cross_validator(d=x[:, feature_idx], feature_idx=feature_idx)
             for feature_idx in range(x.shape[-1])
@@ -215,6 +211,12 @@ def cross_validate_univariate_models(
         ignore_index=True,
         axis=0,
     )
+
+    for col in ["Num Classes", "Positive Class"]:
+        if col in cv_all.columns:
+            move_column_inplace(cv_all, col, len(cv_all.columns) - 1)
+
+    return cv_all
 
 
 def _add_splits_metrics(cv_out, out):
