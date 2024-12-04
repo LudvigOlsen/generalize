@@ -150,6 +150,7 @@ def cross_validate_univariate_models(
         weight_loss_by_class=weight_loss_by_class,
         weight_per_split=weight_per_split,
         aggregate_by_groups=aggregate_by_groups,
+        cv_error_score="raise",
         num_jobs=num_jobs,
         seed=seed,
         messenger=None,  # sets verbose = False
