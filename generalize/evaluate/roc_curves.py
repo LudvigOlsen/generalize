@@ -61,7 +61,7 @@ class ROCCurve:
         """
         Container for Receiver Operating Characteristic (ROC) curve values.
 
-        E.g. as calculated with `sklearn.metrics.roc_curve()`.
+        E.g., as calculated with `sklearn.metrics.roc_curve()`.
 
         Parameters
         ----------

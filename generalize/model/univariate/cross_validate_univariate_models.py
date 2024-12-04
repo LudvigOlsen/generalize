@@ -61,7 +61,7 @@ def cross_validate_univariate_models(
     eval_by_split : bool
         Whether to evaluate by splits instead of with all predictions at once.
         When paired with `split`, the output will also have metrics
-        for each split. E.g. when each part is a dataset and we wish to
+        for each split. E.g., when each part is a dataset and we wish to
         have scores for each separately.
     positive_label: Label (likely class index) for the positive class,
         in binary classification.
@@ -86,7 +86,7 @@ def cross_validate_univariate_models(
     weight_per_split : bool
         Whether to perform the loss weighting separately per split.
         Affects both class- and group-based weighting.
-        E.g. when each fold is a dataset with some set of biases
+        E.g., when each fold is a dataset with some set of biases
         that shouldn't be ascribed to the majority class. Instead of weighting based
         on the overall class imbalance, we fix the imbalance within each dataset.
         NOTE: May not be meaningful when `split` is not specified.

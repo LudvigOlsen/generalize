@@ -36,7 +36,7 @@ def select_samples(
         List of labels to select data for.
     collapse_map
         Dict with `new_label->labels to collapse`.
-        E.g. `'cancer':['colon', 'rectal']`.
+        E.g., `'cancer':['colon', 'rectal']`.
     positive_label
         The label that should be the positive class.
         The new class index for that label is returned.
@@ -45,13 +45,13 @@ def select_samples(
     shuffle
         Whether to shuffle the output. Otherwise the samples are ordered by their label.
     rm_prefixed_index
-        Whether to remove prefixed indices (e.g. "0_<label>") from new label names.
+        Whether to remove prefixed indices (e.g., "0_<label>") from new label names.
     seed
         Random seed to use.
     messenger
         A `utipy.Messenger` instance used to print/log/... information.
         When `None`, no printing/logging is performed.
-        The messenger determines the messaging function (e.g. `print` or `log.info`)
+        The messenger determines the messaging function (e.g., `print` or `log.info`)
         and potential indentation.
 
     Returns
@@ -417,7 +417,7 @@ def select_indices(
         `None`s are passed through.
     indices
         List of tuples with indices of the feature sets and features to get.
-        e.g. [(0, 1), (1,8), ...]
+        e.g., [(0, 1), (1,8), ...]
         When `None`, all feature sets and features are selected.
     add_feature_sets
         Additional features sets to get all features for.

@@ -127,7 +127,7 @@ class BinaryConfusionMatrix(BaseConfusionMatrix):
     def to_collection(self):
         """
         Convert to a one-element `ConfusionMatrices` collection.
-        E.g. in order to save the confusion matrix to disk.
+        E.g., in order to save the confusion matrix to disk.
         """
         coll = ConfusionMatrices(
             classes=self.classes,
@@ -253,7 +253,7 @@ class MulticlassConfusionMatrix(BaseConfusionMatrix):
     def to_collection(self):
         """
         Convert to a one-element `ConfusionMatrices` collection.
-        E.g. in order to save the confusion matrix to disk.
+        E.g., in order to save the confusion matrix to disk.
         """
         coll = ConfusionMatrices(classes=self.classes, count_names=self.count_names)
         coll.add(path="Confusion Matrix", matrix=self.confusion_matrix)

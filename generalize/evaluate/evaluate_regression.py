@@ -51,7 +51,7 @@ class RegressionEvaluator:
         predictions
             The predicted values as a list or `numpy.ndarray`.
         groups
-            Group identifiers (e.g. subject IDs).
+            Group identifiers (e.g., subject IDs).
             Predictions are averaged per group before evaluation.
         ignore_missing
             Whether to ignore missing values in

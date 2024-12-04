@@ -32,11 +32,11 @@ class ConfusionMatrices:
             Names of the target classes.
         class_roles
             Dictionary mapping `class role -> target class`.
-            E.g. `{'negative': 'healthy', 'positive': 'cancer'}`.
+            E.g., `{'negative': 'healthy', 'positive': 'cancer'}`.
         count_names
             Array of strings with a name for each count
             in the confusion matrix.
-            E.g. `np.array([['TN', 'FP'], ['FN', 'TP']])`.
+            E.g., `np.array([['TN', 'FP'], ['FN', 'TP']])`.
         note
             A string to print when printing the collection.
         """

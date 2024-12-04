@@ -129,7 +129,7 @@ def cross_validate_with_predictions(
     pass_groups_to_estimator : bool, default=False
         Whether to pass the groups of the training data to 
         ``estimator.fit(..., groups=groups_train)``.
-        Useful when the estimator (e.g. ``GridSearchCV``) implements 
+        Useful when the estimator (e.g., ``GridSearchCV``) implements 
         cross-validation.
         Ignored when ``groups`` is None.
     return_train_score : bool, default=False
@@ -385,7 +385,7 @@ def _fit_predict_score(
         supervised learning.
     groups : array-like of shape (n_samples,) or None
         The group IDs to pass to the estimator in case it
-        has cross-validation built-in (e.g. nested cross-validation).
+        has cross-validation built-in (e.g., nested cross-validation).
     scorer : A single callable or dict mapping scorer name to the callable
         If it is a single callable, the return value for ``train_scores`` and
         ``test_scores`` is a single float.
@@ -410,7 +410,7 @@ def _fit_predict_score(
     pass_groups_to_estimator : bool, default=False
         Whether to pass the groups of the training data to 
         ``estimator.fit(..., groups=groups_train)``.
-        Useful when the estimator (e.g. ``GridSearchCV``) implements 
+        Useful when the estimator (e.g., ``GridSearchCV``) implements 
         cross-validation.
         Ignored when ``groups`` is None.
     return_train_score : bool, default=False

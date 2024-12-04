@@ -33,7 +33,7 @@ from generalize.model.utils import (
 
 # TODO Consider order of the arguments
 # TODO Should outer_split be allowed to have a split per repetition?
-# TODO Add option to retrieve an attribute from the pipeline. E.g. "nmf__H" for NMF components.
+# TODO Add option to retrieve an attribute from the pipeline. E.g., "nmf__H" for NMF components.
 #      Should probably be a list of attribute names to extract from "best_estimator_" objects
 
 
@@ -102,7 +102,7 @@ def nested_cross_validate(
         Argument names must be prefixed with the name of the pipeline element using it.
         That is, `"model__"` (two underscores) for model parameters or the
         name of a specified transformer (see `transformers`) followed by two underscores
-        (e.g. `"my_transformer__xxx"` if `transformers` had a `"my_transformer"` transformer
+        (e.g., `"my_transformer__xxx"` if `transformers` had a `"my_transformer"` transformer
         accepting the `xxx` keyword during initialization).
     groups : 1D `numpy.ndarray` or `None`
         An array of group IDs (one for each of the data points).
@@ -120,7 +120,7 @@ def nested_cross_validate(
         **No Evaluation**:  Wrap a group identifier in the `"no_eval(ID)"` string
         (where `ID` is the group identifier) for samples that should not be included
         in the outer loop evaluation. These samples are removed in-between prediction
-        and evaluation. E.g. used for samples that were used for calculating batch
+        and evaluation. E.g., used for samples that were used for calculating batch
         correction during prediction and should thus not be evaluated on.
         NOTE: Max. one of the "train_only()" and "no_eval()" wrappers can
         be used for the same sample (train-only already leads to no evaluation).
@@ -157,7 +157,7 @@ def nested_cross_validate(
     eval_by_split : bool
         Whether to evaluate by splits instead of with all predictions at once.
         When paired with `outer_split`, the output will also have summaries
-        for each split. E.g. when each part is a dataset and we wish to
+        for each split. E.g., when each part is a dataset and we wish to
         have scores for each separately.
     aggregate_by_groups : bool
         Whether to aggregate predictions per group, prior to evaluation.
@@ -183,7 +183,7 @@ def nested_cross_validate(
     weight_per_split : bool
         Whether to perform the loss weighting separately per outer split.
         Affects both class- and group-based weighting.
-        E.g. when each outer split is a dataset with some set of biases
+        E.g., when each outer split is a dataset with some set of biases
         that shouldn't be ascribed to the majority class. Instead of weighting based
         on the overall class imbalance, we fix the imbalance within each dataset.
         NOTE: May not be meaningful when `outer_split` is not specified.
@@ -193,7 +193,7 @@ def nested_cross_validate(
         NOTE Unless interrupted, the (uniquely named) subfolders created in this folder are deleted again.
     process_predictions_fn : callable
         A function for processing the predictions from `model` prior to evaluation.
-        E.g. shape flattening, applying softmax or truncation.
+        E.g., shape flattening, applying softmax or truncation.
         The function should take a single argument (the predictions)
         and return a single output (the processed predictions).
         Skorch models use their `.predict_nonlinearity()` method for this by default.
@@ -253,7 +253,7 @@ def nested_cross_validate(
     messenger : `utipy.Messenger` or `None`
         A `utipy.Messenger` instance used to print/log/... information.
         When `None`, no printing/logging is performed.
-        The messenger determines the messaging function (e.g. `print`)
+        The messenger determines the messaging function (e.g., `print`)
         and potential indentation.
 
     Returns
@@ -865,7 +865,7 @@ def _create_unique_name_within_folder(
         """
         return not ((path / new_name).exists() or list(path.glob(f"{name}*")))
 
-    # Create name (e.g. of directory)
+    # Create name (e.g., of directory)
     # Which is not available in the path
     num_attempts = 0
     while num_attempts < max_attempts:

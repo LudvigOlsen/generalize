@@ -77,7 +77,7 @@ class NestableGridSearchCV(GridSearchCV):
         messenger : `utipy.Messenger` or None
             A `utipy.Messenger` instance used to print/log/... information.
             When `None`, no printing/logging is performed.
-            The messenger determines the messaging function (e.g. `print`)
+            The messenger determines the messaging function (e.g., `print`)
             and potential indentation.
             Currently only used when fitting fails.
         """
@@ -494,9 +494,9 @@ def make_simplest_model_refit_strategy(
     Create function for the `refit` argument that finds the hyperparameter
     combination where the average score is within the
     standard deviation of the best scoring combination and
-    the lowest or highest value of a main hyperparameter value (e.g. lowest C in LASSO)
+    the lowest or highest value of a main hyperparameter value (e.g., lowest C in LASSO)
     and ensures the values of other hyperparameters are equal to or either higher or lower
-    than in the best combination (e.g. lower or same number of PCA components).
+    than in the best combination (e.g., lower or same number of PCA components).
 
     Parameters
     ----------
@@ -583,7 +583,7 @@ def make_simplest_model_refit_strategy(
         for var_nm in all_hyperparameter_names:
             if "[" in var_nm:
                 # Column is nested in a dict
-                # E.g. '{xx__yy}__zz' means '{xx__yy}' is the column with the dict
+                # E.g., '{xx__yy}__zz' means '{xx__yy}' is the column with the dict
                 # and 'zz' is the key within the dict
                 if var_nm[0] != "[":
                     raise ValueError(

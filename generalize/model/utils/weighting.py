@@ -72,7 +72,7 @@ def calculate_sample_weight(
             raise ValueError("`weight_per_split` was enabled but `groups` was `None`.")
 
         # In this case, we have added the split IDs
-        # to the groups (e.g. `group1_|_split1`)
+        # to the groups (e.g., `group1_|_split1`)
         groups, split_ids, unique_slit_ids = split_groups_and_splits(groups)
 
         if weight_loss_by_groups:

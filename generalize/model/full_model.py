@@ -75,7 +75,7 @@ def train_full_model(
         Argument names must be prefixed with the name of the pipeline element using it.
         That is, `"model__"` (two underscores) for model parameters or the
         name of a specified transformer (see `transformers`) followed by two underscores
-        (e.g. `"my_transformer__xxx"` if `transformers` had a `"my_transformer"` transformer
+        (e.g., `"my_transformer__xxx"` if `transformers` had a `"my_transformer"` transformer
         accepting the `xxx` keyword during initialization).
     groups : 1D `numpy.ndarray` or `None`
         An array of group IDs (one for each of the data points).
@@ -104,7 +104,7 @@ def train_full_model(
     split : list or `numpy.ndarray` or `None`
         Pre-specified fold identifiers for hyperparameter tuning.
         Can be either integers or strings.
-        E.g. Useful when passing multiple datasets and hyperparameters should be chosen
+        E.g., Useful when passing multiple datasets and hyperparameters should be chosen
         by best generalizability across the datasets.
         **Train Only**: Wrap a split identifier in the `"train_only(ID)"` string
         (where `ID` is the split identifier) for samples that should always be in
@@ -145,13 +145,13 @@ def train_full_model(
     weight_per_split : bool
         Whether to perform the loss weighting separately per split.
         Affects both class- and group-based weighting.
-        E.g. when each split is a dataset with some set of biases
+        E.g., when each split is a dataset with some set of biases
         that shouldn't be ascribed to the majority class. Instead of weighting based
         on the overall class imbalance, we fix the imbalance within each dataset.
         NOTE: May not be meaningful when `split` is not specified.
     process_predictions_fn : callable
         A function for processing the predictions from `model` prior to evaluation.
-        E.g. shape flattening, applying softmax or truncation.
+        E.g., shape flattening, applying softmax or truncation.
         The function should take a single argument (the predictions)
         and return a single output (the processed predictions).
         Skorch models use their `.predict_nonlinearity()` method for this by default.
@@ -201,7 +201,7 @@ def train_full_model(
     messenger : `utipy.Messenger` or `None`
         A `utipy.Messenger` instance used to print/log/... information.
         When `None`, no printing/logging is performed.
-        The messenger determines the messaging function (e.g. `print`)
+        The messenger determines the messaging function (e.g., `print`)
         and potential indentation.
 
     Returns

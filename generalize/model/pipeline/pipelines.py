@@ -337,7 +337,7 @@ def create_pipeline(
     messenger: Optional[Callable] = Messenger(verbose=True, indent=0, msg_fn=print),
 ) -> Pipeline:
     """
-    Create `sklearn` pipeline for use during model training (e.g. within cross-validation).
+    Create `sklearn` pipeline for use during model training (e.g., within cross-validation).
 
     Parameters
     ----------

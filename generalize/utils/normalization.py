@@ -14,7 +14,7 @@ def normalize_sum_to_one(
         If 40% of our data is NaN, and we normalize the rest
         to sum to 1, the normalized values will not be on the
         same scale as if we only had 10% NaNs.
-        Hence, we treat each NaN as if it had some (e.g. the median)
+        Hence, we treat each NaN as if it had some (e.g., the median)
         value during scaling.
 
     :warns: Throws warning when all elements in `x` are NaN.

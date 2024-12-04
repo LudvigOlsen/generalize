@@ -18,9 +18,9 @@ def parse_labels_to_use(
         One of the labels can be "-1", which will create
             a label group called "Rest" with the non-specified
             labels.
-        Combine multiple labels to a single label group (e.g. cancer <- colon,rectal,prostate)
+        Combine multiple labels to a single label group (e.g., cancer <- colon,rectal,prostate)
             by giving a name and the paranthesis-wrapped, comma-separated labels.
-            E.g. 'cancer(colon,rectal,prostate)'.
+            E.g., 'cancer(colon,rectal,prostate)'.
         When `None`, the unique labels are all used, and the second
         label in `unique_labels` is considered the positive label
         (when it contains 2 labels in total).

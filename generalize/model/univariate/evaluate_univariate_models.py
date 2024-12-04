@@ -1,6 +1,6 @@
 """
-This module fits linear/logistic regression models with each feature on their own. 
-E.g. y ~ x1, y ~ x2, y ~ x3, ...
+This module fits linear/logistic regression models with each feature on their own.
+E.g., y ~ x1, y ~ x2, y ~ x3, ...
 
 """
 
@@ -133,7 +133,7 @@ def evaluate_univariate_models(
     weight_per_split : bool
         Whether to perform the loss weighting separately per split **during cross-validation**.
         Affects both class- and group-based weighting.
-        E.g. when each fold is a dataset with some set of biases
+        E.g., when each fold is a dataset with some set of biases
         that shouldn't be ascribed to the majority class. Instead of weighting based
         on the overall class imbalance, we fix the imbalance within each dataset.
         NOTE: May not be meaningful when `split` is not specified.
@@ -145,7 +145,7 @@ def evaluate_univariate_models(
     eval_by_split : bool
         Whether to evaluate by splits instead of with all predictions at once.
         When paired with `split`, the output will also have metrics
-        for each split. E.g. when each part is a dataset and we wish to
+        for each split. E.g., when each part is a dataset and we wish to
         have scores for each separately.
     positive_label
         Label (likely class index) for the positive class,
@@ -163,7 +163,7 @@ def evaluate_univariate_models(
     messenger: `utipy.Messenger` or None
         A `utipy.Messenger` instance used to print/log/... information.
         When `None`, no printing/logging is performed.
-        The messenger determines the messaging function (e.g. `print`)
+        The messenger determines the messaging function (e.g., `print`)
         and potential indentation.
 
     Returns
@@ -327,7 +327,7 @@ def evaluate_univariate_models(
             seed=seed,
             add_info_cols=False,
         )
-        # TODO: Should probably have metrics per split when splits are pre-defined (e.g. cross-datasets)
+        # TODO: Should probably have metrics per split when splits are pre-defined (e.g., cross-datasets)
 
         # Calculate random forest feature importances
         tree_importances = calculate_tree_feature_importance(
@@ -460,7 +460,8 @@ of the specified features separately.
               2: significant and positive slope coefficient).
 
 2) We cross-validate a single-predictor {model_name} regression model for each feature
-   separately, using {split_text}.
+   separately, using {split_text}. When >= 4 test datasets are present, we apply
+   leave-one-dataset-out cross-validation, otherwise K-fold cross-validation.
    In output: {metrics[task]}.
 
 3) We fit a random forest regressor on all features at once and extract its 

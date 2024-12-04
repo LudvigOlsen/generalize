@@ -36,7 +36,7 @@ def evaluate_repetitions(
     ----------
 
     splits_list : list of lists / 1D `numpy.ndarrays` or `None``
-        Lists of data splits (e.g. folds) to evaluate by.
+        Lists of data splits (e.g., folds) to evaluate by.
         When specified, evaluation is first performed per split
         and averaged per repetition, then averaged again.
         Else, all predictions in the repetition is evaluated together

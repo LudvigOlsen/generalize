@@ -17,7 +17,7 @@ from generalize.model.cross_validate.grid_search import make_simplest_model_refi
 
 # TODO Test first that the predictions etc. are returned in the right order
 # so we know that targets and predictions are in the same order!
-# E.g. make a simple dataset and make a deterministic model (e.g. x < 0.5 = 0 else 1)
+# E.g., make a simple dataset and make a deterministic model (e.g., x < 0.5 = 0 else 1)
 # and check the or
 
 #@ignore_warnings(category=ConvergenceWarning)

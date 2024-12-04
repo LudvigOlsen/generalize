@@ -72,7 +72,7 @@ class Evaluator:
             The probability cutoff *in binary classification*.
         labels: dict or None
             Dict mapping target value to label name.
-            E.g. {0: "healthy", 1: "cancer"}
+            E.g., {0: "healthy", 1: "cancer"}
         ignore_missing : bool
             Whether to ignore missing (`numpy.nan`) values.
             NOTE: Currently only used in regression.
@@ -160,7 +160,7 @@ class Evaluator:
         identifier_cols_dict: Optional[Dict[str, Union[str, numbers.Number]]] = None,
     ) -> dict:
         """
-        Combine a list of evaluations, e.g. from multiple repetitions.
+        Combine a list of evaluations, e.g., from multiple repetitions.
 
         Parameters
         ----------
@@ -286,7 +286,7 @@ class Evaluator:
         identifier_cols_dict: Optional[Dict[str, Union[str, numbers.Number]]] = None,
     ) -> dict:
         """
-        Combine a list of evaluations, e.g. from multiple repetitions.
+        Combine a list of evaluations, e.g., from multiple repetitions.
 
         Parameters
         ----------
@@ -375,11 +375,11 @@ class Evaluator:
     @staticmethod
     def summarize_evaluations(evaluations: List[dict], task: str) -> dict:
         """
-        Summarize a list of evaluations, e.g. from multiple repetitions.
+        Summarize a list of evaluations, e.g., from multiple repetitions.
 
         Get the mean, standard deviation, min., and max. for each
         metric in the scores, as well as the counts of `numpy.nan`s
-        (e.g. in case of zero-division).
+        (e.g., in case of zero-division).
 
         Parameters
         ----------
@@ -438,7 +438,7 @@ class Evaluator:
     @staticmethod
     def summarize_summaries(summaries: List[dict], task: str) -> dict:
         """
-        Summarize a list of summaries, e.g. from multiple repetitions with splits.
+        Summarize a list of summaries, e.g., from multiple repetitions with splits.
 
         Get the mean, standard deviation, min., and max. for each
         metric in the scores, as well as the total counts of `numpy.nan`s
@@ -839,7 +839,7 @@ class Evaluator:
     ) -> None:
         """
         Save already combined predictions,
-        e.g. as combined with `.combine_predictions()`
+        e.g., as combined with `.combine_predictions()`
 
         Parameters
         ----------

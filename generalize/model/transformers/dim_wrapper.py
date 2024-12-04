@@ -125,7 +125,7 @@ class DimTransformerWrapper(BaseEstimator, TransformerMixin):
         X : {array-like} of shape (n_samples, ..., n_features)
             The data used to fit the estimator(s) with.
             When >2D, an estimator is initialized and fitted per index combination
-            in the 2 - (n-1) dimensions separately. E.g. when 3D, each
+            in the 2 - (n-1) dimensions separately. E.g., when 3D, each
             index in the second dimension has its own estimator.
         y : {array-like} of shape (n_samples) or `None`
             Labels/targets for the samples.

@@ -9,7 +9,7 @@ def remove_missing_data(
     Find the indices of values (1D) or rows (2D) of a set of 1- and 2D
     arrays with missing data (`numpy.nan`) and remove them from all
     the arrays.
-    E.g. if you have a 1D sample target array and a 2D sample x feature array
+    E.g., if you have a 1D sample target array and a 2D sample x feature array
     we find the samples with NaNs and remove them from both.
 
     Parameters

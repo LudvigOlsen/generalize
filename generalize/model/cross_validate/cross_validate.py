@@ -106,7 +106,7 @@ def cross_validate(
     eval_by_split : bool
         Whether to evaluate by splits instead of with all predictions at once.
         When paired with `split`, the output will also have summaries
-        for each split. E.g. when each part is a dataset and we wish to
+        for each split. E.g., when each part is a dataset and we wish to
         have scores for each separately.
     aggregate_by_groups : bool
         Whether to aggregate predictions per group, prior to evaluation.
@@ -126,13 +126,13 @@ def cross_validate(
     weight_per_split : bool
         Whether to perform the loss weighting separately per split.
         Affects both class- and group-based weighting.
-        E.g. when each fold is a dataset with some set of biases
+        E.g., when each fold is a dataset with some set of biases
         that shouldn't be ascribed to the majority class. Instead of weighting based
         on the overall class imbalance, we fix the imbalance within each dataset.
         NOTE: May not be meaningful when `split` is not specified.
     process_predictions_fn : callable
         A function for processing the predictions from `model` prior to evaluation.
-        E.g. shape flattening, applying softmax or truncation.
+        E.g., shape flattening, applying softmax or truncation.
         The function should take a single argument (the predictions)
         and return a single output (the processed predictions).
         Skorch models use their `.predict_nonlinearity()` method for this by default.
@@ -173,7 +173,7 @@ def cross_validate(
     messenger : `utipy.Messenger` or `None`
         A `utipy.Messenger` instance used to print/log/... information.
         When `None`, no printing/logging is performed.
-        The messenger determines the messaging function (e.g. `print`)
+        The messenger determines the messaging function (e.g., `print`)
         and potential indentation.
 
     Returns
