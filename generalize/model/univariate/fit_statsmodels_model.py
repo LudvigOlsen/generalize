@@ -88,7 +88,7 @@ def fit_statsmodels_model(
 
     # Fit model
     try:
-        result = model.fit()
+        result = model.fit(disp=0)
     except PerfectSeparationError:
         # Classification with perfectly separated classes
         msg = "Got a `PerfectSeparationError`. Returning NaNs."
