@@ -227,7 +227,15 @@ def _add_splits_metrics(cv_out, out):
     out["Fold"] = "Average"
     out = pd.concat([out, split_evals])
     out = _filter_threshold_versions(out, rm_cols=False)
-    out = out.pivot_table(columns=["Fold"], index=["Threshold Version"])
+
+    # Select only the columns that can be aggregated (numeric columns)
+    numeric_cols = out.select_dtypes(include="number").columns.tolist()
+
+    out = out.pivot_table(
+        columns=["Fold"],
+        index=["Threshold Version"],
+        values=numeric_cols,
+    )
     out = out.sort_index(axis=1, level=1)
     out = out.sort_index(axis=1, level=1, key=lambda ks: [len(ki) for ki in ks])
     out.columns = [f"{x}_{y}" for x, y in out.columns]
