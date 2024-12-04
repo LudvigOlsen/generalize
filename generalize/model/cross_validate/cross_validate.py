@@ -12,7 +12,7 @@ from generalize.model.cross_validate.kfolder import KFolder, specified_folds_ite
 from generalize.evaluate.evaluate_repetitions import evaluate_repetitions
 from generalize.utils.missing_data import remove_missing_data
 from generalize.model.pipeline.pipelines import create_pipeline
-from generalize.model.utils import detect_train_only
+from generalize.model.utils import detect_train_only, add_split_to_groups
 
 # TODO Consider order of the arguments
 # TODO Should split be allowed to have a split per repetition?
@@ -279,6 +279,16 @@ def cross_validate(
         split=split,
         weight_per_split=weight_per_split,
         messenger=messenger,
+    )
+
+    # Add splits to groups when necessary
+    groups, split = add_split_to_groups(
+        groups=groups,
+        split=split,
+        weight_per_split=weight_per_split,
+        weight_loss_by_groups=weight_loss_by_groups,
+        weight_loss_by_class=weight_loss_by_class,
+        k_inner=1,  # No inner CV, so set to >0
     )
 
     # Check the model can be used with the pipeline
