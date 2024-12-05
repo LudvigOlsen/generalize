@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "generalize"
-version = "0.2.0"
+version = "0.2.1"
 description = "Machine learning tools for running repeated nested leave-one-dataset-out validation and more."
 authors = ["Ludvig Renbo Olsen <mail@ludvigolsen.dk>"]
 readme = "README.md"
