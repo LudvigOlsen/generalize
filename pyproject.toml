@@ -11,7 +11,7 @@ issues = "https://github.com/ludvigolsen/generalize/issues"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-utipy = "^1.0.2"
+utipy = "^1.0.3"
 scikit-learn = "1.0.2"
 pandas = "1.5.3"
 numpy = "1.26.4"
