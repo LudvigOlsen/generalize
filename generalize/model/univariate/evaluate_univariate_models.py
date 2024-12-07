@@ -410,6 +410,10 @@ def evaluate_univariate_models(
         ignore_index=True,
     )
 
+    # Remove empty feature set column
+    if feature_sets_was_none and "Feature Set" in all_feature_sets_df.columns:
+        del all_feature_sets_df["Feature Set"]
+
     messenger("Generating README text")
     readme_text = explain_feature_evaluation_df(
         task=task,
