@@ -10,6 +10,9 @@ Repository = "https://github.com/ludvigolsen/generalize"
 Issues = "https://github.com/ludvigolsen/generalize/issues"
 Changelog = "https://github.com/ludvigolsen/generalize/blob/main/CHANGELOG.md"
 
+[tool.poetry]
+include = ["CHANGELOG.md"]
+
 [tool.poetry.dependencies]
 python = "^3.9"
 utipy = "^1.0.4"
