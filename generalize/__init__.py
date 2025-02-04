@@ -8,6 +8,7 @@ from .model.full_model import train_full_model
 from .model.pipeline.pipeline_designer import PipelineDesigner
 from .evaluate.evaluate import Evaluator
 from .evaluate.roc_curves import ROCCurve, ROCCurves
+from .evaluate.confusion_matrices import ConfusionMatrices
 from .dataset.load_dataset import load_dataset
 from .dataset.order_dataset import order_by_label
 from .dataset.parse_labels_to_use import parse_labels_to_use

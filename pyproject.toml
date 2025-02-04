@@ -1,17 +1,18 @@
-[tool.poetry]
+[project]
 name = "generalize"
-version = "0.2.1"
+version = "0.2.2"
 description = "Machine learning tools for running repeated nested leave-one-dataset-out validation and more."
-authors = ["Ludvig Renbo Olsen <mail@ludvigolsen.dk>"]
+authors = [{name = "Ludvig", email = "<mail@ludvigolsen.dk>"}]
 readme = "README.md"
-repository = "https://github.com/ludvigolsen/generalize"
 
-[tool.poetry.urls]
-issues = "https://github.com/ludvigolsen/generalize/issues"
+[project.urls]
+Repository = "https://github.com/ludvigolsen/generalize"
+Issues = "https://github.com/ludvigolsen/generalize/issues"
+Changelog = "https://github.com/ludvigolsen/generalize/blob/main/CHANGELOG.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-utipy = "^1.0.3"
+utipy = "^1.0.4"
 scikit-learn = "1.0.2"
 pandas = "1.5.3"
 numpy = "1.26.4"
