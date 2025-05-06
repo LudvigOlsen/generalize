@@ -17,9 +17,9 @@ def parse_labels_to_use(
         List of strings with labels to use, or `None`.
         One of the labels can be "-1", which will create
             a label group called "Rest" with the non-specified
-            labels.
+            labels (except the special label "exclude").
         Combine multiple labels to a single label group (e.g., cancer <- colon,rectal,prostate)
-            by giving a name and the paranthesis-wrapped, comma-separated labels.
+            by giving a name and the parenthesis-wrapped, comma-separated labels.
             E.g., 'cancer(colon,rectal,prostate)'.
         When `None`, the unique labels are all used, and the second
         label in `unique_labels` is considered the positive label
@@ -50,41 +50,58 @@ def parse_labels_to_use(
 
     # Remove empty strings (not sure this can happen but sanity check)
     labels_to_use = [label for label in labels_to_use if label]
-    assert (
-        len(labels_to_use) >= 2
-    ), "When `labels_to_use` is specified, 2 or more labels must be specified, separated by whitespace."
+    assert len(labels_to_use) >= 2, (
+        "When `labels_to_use` is specified, 2 or more labels must be specified, separated by whitespace."
+    )
 
     collapse_map = {}
     all_labels_to_use = []
+
+    # Default "rest" group name
+    rest_group_name = "Rest"
 
     # Extract positive label
     positive_label = None
     if len(labels_to_use) == 2:
         positive_label = labels_to_use[1]
         if positive_label == "-1":
-            positive_label = "Rest"
+            positive_label = rest_group_name
         elif "(" in positive_label:
+            # Should catch later updated rest_group_name as well
             positive_label = positive_label.split("(")[0]
 
     # Find collapsings and post-collapse labels
     assign_rest_to_group = False
     for group in labels_to_use:
-        if group == "-1":
+        if "-1" in group:
             if assign_rest_to_group:
                 raise ValueError("`labels_to_use` contained more than one `-1`.")
+            if "(" in group:
+                # Use custom rest group name
+                rest_group_name = group.split("(")[0]
+                if not group == f"{rest_group_name}(-1)":
+                    raise ValueError(
+                        "Found a flawed label group with '-1' in it. "
+                        f"Either specify `'-1'` directly or `'RestName(-1)'`. Got: '{group}'"
+                    )
+            elif group != "-1":
+                raise ValueError(
+                    "Found a flawed label group with '-1' in it. "
+                    f"Either specify `'-1'` directly or `'RestName(-1)'`. Got: '{group}'"
+                )
             assign_rest_to_group = True
             continue
         if "(" in group:
             group_name, group = group.split("(")
-            # Remove end paranthesis
+            # Remove end parenthesis
             assert group[-1] == ")", "When label contains `(` it must end with `)`"
             group = group[:-1]
             labels_in_group = group.split(",")
             # Trim leading and trailing whitespaces
             labels_in_group = [label.strip() for label in labels_in_group]
-            assert (
-                len(labels_in_group) > 0
-            ), "Found no comma-separated labels within the parantheses."
+            assert len(labels_in_group) > 0, (
+                "Found no comma-separated labels within the parentheses."
+            )
             collapse_map[group_name] = labels_in_group
             all_labels_to_use += labels_in_group
         else:
@@ -93,15 +110,15 @@ def parse_labels_to_use(
     # When user specified -1, we add the remaining labels as a single group
     if assign_rest_to_group:
         rest_group_labels = list(set(unique_labels).difference(set(all_labels_to_use)))
+        rest_group_labels = [lab for lab in rest_group_labels if lab != "exclude"]
         all_labels_to_use += rest_group_labels
         if len(rest_group_labels) > 1:
-            rest_group_name = "Rest"
             while rest_group_name in collapse_map.keys():
                 rest_group_name += "_"
             collapse_map[rest_group_name] = rest_group_labels
 
-    assert len(set(all_labels_to_use)) == len(
-        all_labels_to_use
-    ), "A label in `labels_to_use` was found more than once."
+    assert len(set(all_labels_to_use)) == len(all_labels_to_use), (
+        "A label in `labels_to_use` was found more than once."
+    )
 
     return all_labels_to_use, collapse_map, positive_label
