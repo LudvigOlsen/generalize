@@ -1,6 +1,6 @@
 [project]
 name = "generalize"
-version = "0.2.2"
+version = "0.2.3"
 description = "Machine learning tools for running repeated nested leave-one-dataset-out validation and more."
 authors = [{name = "Ludvig", email = "<mail@ludvigolsen.dk>"}]
 readme = "README.md"
@@ -19,7 +19,7 @@ utipy = "^1.0.4"
 scikit-learn = "1.0.2"
 pandas = "1.5.3"
 numpy = "1.26.4"
-joblib = "1.2.0"
+joblib = "1.4.2"
 statsmodels = "0.14.1"
 scipy = "^1.7.3"
 nattrs = "^0.2.2"
