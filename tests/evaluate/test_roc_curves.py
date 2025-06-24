@@ -274,6 +274,12 @@ def test_roc_curve_interpolated_metrics():
     assert np.round(spec_thresh_interp["Specificity"], decimals=3) == np.round(spec_thresh_closest["Specificity"], decimals=3)
     assert np.round(spec_thresh_interp["Sensitivity"], decimals=3) == np.round(spec_thresh_closest["Sensitivity"], decimals=3)
 
+    # Check interpolated threshold
+    thresh_interp = roc.get_interpolated_threshold(threshold=sens_thresh_interp["Threshold"])
+    assert np.round(sens_thresh_interp["Specificity"], decimals=3) == np.round(thresh_interp["Specificity"], decimals=3)
+    assert np.round(sens_thresh_interp["Sensitivity"], decimals=3) == np.round(thresh_interp["Sensitivity"], decimals=3)
+    
+
 
 def test_roc_curve_interpolation():
     labels = np.array([0, 0, 0, 0, 1, 1, 1, 1])
