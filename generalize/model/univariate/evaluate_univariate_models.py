@@ -303,7 +303,7 @@ def evaluate_univariate_models(
         # I.e. multiple p-values with the number of tests
         if bonferroni_correct:
             p_values *= num_tests
-            # Truncate to 0-1 range
+            # Clip to 0-1 range
             p_values[p_values > 1] = 1.0
 
         # Cross-validate each feature separately

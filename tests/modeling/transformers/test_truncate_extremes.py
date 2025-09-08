@@ -5,14 +5,14 @@ from sklearn.utils.estimator_checks import check_estimator
 
 
 from generalize.model.transformers.dim_wrapper import DimTransformerWrapper
-from generalize.model.transformers.truncate_extremes import (
-    TruncateExtremesByPercentiles,
-    TruncateExtremesByIQR,
-    TruncateExtremesBySTD,
+from generalize.model.transformers.clip_extremes import (
+    ClipExtremesByPercentiles,
+    ClipExtremesByIQR,
+    ClipExtremesBySTD,
 )
 
 
-def test_truncate_extremes_by_percentiles_transformer_simple():
+def test_clip_extremes_by_percentiles_transformer_simple():
     # Data
     np.random.seed(1)
     x = np.random.normal(size=(35, 15))
@@ -22,9 +22,9 @@ def test_truncate_extremes_by_percentiles_transformer_simple():
     # Simple version first
     steps = [
         (
-            "truncate_extremes",
+            "clip_extremes",
             DimTransformerWrapper(
-                TruncateExtremesByPercentiles,
+                ClipExtremesByPercentiles,
                 kwargs={
                     "lower_percentile": 20.0,
                     "upper_percentile": 80.0,
@@ -49,7 +49,7 @@ def test_truncate_extremes_by_percentiles_transformer_simple():
     assert ((x_tr.min(), x_tr.max()) == np.percentile(x, [20.0, 80.0])).all()
 
 
-def test_truncate_extremes_by_IQR_transformer_simple():
+def test_clip_extremes_by_IQR_transformer_simple():
     # Data
     np.random.seed(1)
     x = np.random.normal(size=(35, 15))
@@ -59,9 +59,9 @@ def test_truncate_extremes_by_IQR_transformer_simple():
     # Simple version first
     steps = [
         (
-            "truncate_extremes",
+            "clip_extremes",
             DimTransformerWrapper(
-                TruncateExtremesByIQR,
+                ClipExtremesByIQR,
                 kwargs={
                     "lower_num_iqr": 0.5,  # Ensure low enough to affect data
                     "upper_num_iqr": 0.5,
@@ -88,7 +88,7 @@ def test_truncate_extremes_by_IQR_transformer_simple():
     assert [x_tr.min(), x_tr.max()] == [q1 - 0.5 * iqr, q3 + 0.5 * iqr]
 
 
-def test_truncate_extremes_by_std_transformer_simple():
+def test_clip_extremes_by_std_transformer_simple():
     # Data
     np.random.seed(1)
     x = np.random.normal(size=(35, 15))
@@ -98,9 +98,9 @@ def test_truncate_extremes_by_std_transformer_simple():
     # Simple version first
     steps = [
         (
-            "truncate_extremes",
+            "clip_extremes",
             DimTransformerWrapper(
-                TruncateExtremesBySTD,
+                ClipExtremesBySTD,
                 kwargs={
                     "lower_num_std": 0.5,  # Ensure low enough to affect data
                     "upper_num_std": 0.5,
@@ -127,18 +127,18 @@ def test_truncate_extremes_by_std_transformer_simple():
     assert [x_tr.min(), x_tr.max()] == [mean - 0.5 * std, mean + 0.5 * std]
 
 
-def test_truncate_extremes_by_percentile_transformer_passes_check_estimator():
+def test_clip_extremes_by_percentile_transformer_passes_check_estimator():
     # Check that the transformer passes standard estimator checks
     check_estimator(
-        TruncateExtremesByPercentiles(lower_percentile=1.0, upper_percentile=99.0)
+        ClipExtremesByPercentiles(lower_percentile=1.0, upper_percentile=99.0)
     )
 
 
-def test_truncate_extremes_by_IQR_transformer_passes_check_estimator():
+def test_clip_extremes_by_IQR_transformer_passes_check_estimator():
     # Check that the transformer passes standard estimator checks
-    check_estimator(TruncateExtremesByIQR(lower_num_iqr=1.5, upper_num_iqr=1.5))
+    check_estimator(ClipExtremesByIQR(lower_num_iqr=1.5, upper_num_iqr=1.5))
 
 
-def test_truncate_extremes_by_std_transformer_passes_check_estimator():
+def test_clip_extremes_by_std_transformer_passes_check_estimator():
     # Check that the transformer passes standard estimator checks
-    check_estimator(TruncateExtremesBySTD(lower_num_std=2.5, upper_num_std=2.5))
+    check_estimator(ClipExtremesBySTD(lower_num_std=2.5, upper_num_std=2.5))

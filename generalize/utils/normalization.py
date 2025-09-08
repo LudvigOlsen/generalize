@@ -38,11 +38,11 @@ def normalize_sum_to_one(
                 and `x` will *not* sum to one.
             'shift': Adds the absolute minimum value to all elements
                 before the normalization.
-            'truncate': Set negative numbers to 0.0.
+            'clip': Set negative numbers to 0.0.
     :returns: `x` divided by its (estimated) sum.
     """
 
-    assert handle_negatives in ["raise", "abs", "shift", "truncate"]
+    assert handle_negatives in ["raise", "abs", "shift", "clip"]
 
     # Handle negative numbers
     x_signs = None
@@ -65,7 +65,7 @@ def normalize_sum_to_one(
             # Add the smallest value
             # It is below 0, so we need to subtract to add the absolute value
             x += np.abs(np.nanmin(x))
-        if handle_negatives == "truncate":
+        if handle_negatives == "clip":
             # Set negative numbers to 0
             x[x < 0] = 0.0
 

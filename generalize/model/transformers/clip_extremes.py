@@ -8,14 +8,16 @@ from sklearn.base import (
 )
 
 
-class BaseTruncateExtremes(TransformerMixin, BaseEstimator, ABC):
+class BaseClipExtremes(TransformerMixin, BaseEstimator, ABC):
     def __init__(
         self,
         by="all",
         copy: bool = True,
     ) -> None:
         """
-        Base class for truncating extreme values.
+        Base class for clipping extreme values.
+
+        *Clipping* replaces an extreme value by the value at a given threshold.
 
         The subclass defines the method for calculating the value limits.
         Value limits can be found for either all data, per column or row-wise.
@@ -78,7 +80,7 @@ class BaseTruncateExtremes(TransformerMixin, BaseEstimator, ABC):
         pass
 
     def transform(self, X: np.ndarray, copy: Optional[bool] = None):
-        """Apply truncation based on fitted value limits.
+        """Apply clipping based on fitted value limits.
 
         Parameters
         ----------
@@ -128,7 +130,7 @@ class BaseTruncateExtremes(TransformerMixin, BaseEstimator, ABC):
         return {"allow_nan": False}
 
 
-class TruncateExtremesByPercentiles(BaseTruncateExtremes):
+class ClipExtremesByPercentiles(BaseClipExtremes):
     def __init__(
         self,
         lower_percentile: Optional[float] = None,
@@ -137,7 +139,9 @@ class TruncateExtremesByPercentiles(BaseTruncateExtremes):
         copy: bool = True,
     ):
         """
-        Truncate values that are beyond a percentile in the fit data.
+        Clip values that are beyond a percentile in the fit data.
+
+        *Clipping* replaces an extreme value by the value at a given threshold.
 
         Value limits can be found for either all data, per column or row-wise.
 
@@ -145,10 +149,10 @@ class TruncateExtremesByPercentiles(BaseTruncateExtremes):
         ----------
         lower_percentile
             Percentile (0.-100.) to use as lower value limit.
-            When `None`, no lower truncation is performed.
+            When `None`, no lower clipping is performed.
         upper_percentile
             Percentile (0.-100.) to use as upper value limit.
-            When `None`, no upper truncation is performed.
+            When `None`, no upper clipping is performed.
         by
             Whether to extract value limits from all data,
             or separately per column or row.
@@ -192,7 +196,7 @@ class TruncateExtremesByPercentiles(BaseTruncateExtremes):
         return lower_lim_, upper_lim_
 
 
-class TruncateExtremesByIQR(BaseTruncateExtremes):
+class ClipExtremesByIQR(BaseClipExtremes):
     def __init__(
         self,
         lower_num_iqr: Optional[float] = None,
@@ -201,7 +205,10 @@ class TruncateExtremesByIQR(BaseTruncateExtremes):
         copy: bool = True,
     ):
         """
-        Truncate values that are beyond a percentile in the fit data.
+        Clip values that are beyond a number of IQRs from
+        Q1 (lower) or Q3 (upper) in the fit data.
+
+        *Clipping* replaces an extreme value by the value at a given threshold.
 
         Value limits can be found for either all data, per column or row-wise.
 
@@ -210,11 +217,11 @@ class TruncateExtremesByIQR(BaseTruncateExtremes):
         lower_num_iqr
             Number of IQRs below Q1 to consider the value limit.
             A good starting point may be 1.5.
-            When `None`, no lower truncation is performed.
+            When `None`, no lower clipping is performed.
         upper_num_iqr
             Number of IQRs above Q3 to consider the value limit.
             A good starting point may be 1.5.
-            When `None`, no upper truncation is performed.
+            When `None`, no upper clipping is performed.
         by
             Whether to extract value limits from all data,
             or separately per column or row.
@@ -250,7 +257,7 @@ class TruncateExtremesByIQR(BaseTruncateExtremes):
         return lower_lim_, upper_lim_
 
 
-class TruncateExtremesBySTD(BaseTruncateExtremes):
+class ClipExtremesBySTD(BaseClipExtremes):
     def __init__(
         self,
         lower_num_std: Optional[float] = None,
@@ -259,7 +266,10 @@ class TruncateExtremesBySTD(BaseTruncateExtremes):
         copy: bool = True,
     ):
         """
-        Truncate values that are beyond a percentile in the fit data.
+        Clip values that are beyond a number of standard deviations
+        from the mean in the fit data.
+
+        *Clipping* replaces an extreme value by the value at a given threshold.
 
         Value limits can be found for either all data, per column or row-wise.
 
@@ -267,10 +277,10 @@ class TruncateExtremesBySTD(BaseTruncateExtremes):
         ----------
         lower_num_std
             Number of standard deviations from the mean to consider the value limit.
-            When `None`, no lower truncation is performed.
+            When `None`, no lower clipping is performed.
         upper_num_std
             Number of standard deviations from the mean to consider the value limit.
-            When `None`, no upper truncation is performed.
+            When `None`, no upper clipping is performed.
         by
             Whether to extract value limits from all data,
             or separately per column or row.

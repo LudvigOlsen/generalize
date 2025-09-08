@@ -132,7 +132,7 @@ def cross_validate(
         NOTE: May not be meaningful when `split` is not specified.
     process_predictions_fn : callable
         A function for processing the predictions from `model` prior to evaluation.
-        E.g., shape flattening, applying softmax or truncation.
+        E.g., shape flattening, applying softmax or clipping.
         The function should take a single argument (the predictions)
         and return a single output (the processed predictions).
         Skorch models use their `.predict_nonlinearity()` method for this by default.

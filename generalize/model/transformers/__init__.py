@@ -5,8 +5,8 @@ from .row_scaler import RowScaler
 from .index_feature_selector import IndexFeatureSelector, IndexFeatureRemover
 from .pca_by_explained_variance import PCAByExplainedVariance
 from .mean_during_test import MeanDuringTest
-from .truncate_extremes import (
-    TruncateExtremesByIQR,
-    TruncateExtremesByPercentiles,
-    TruncateExtremesBySTD,
+from .clip_extremes import (
+    ClipExtremesByIQR,
+    ClipExtremesByPercentiles,
+    ClipExtremesBySTD,
 )
