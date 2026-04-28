@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- Fixes the interpolated sensitivity returned by `ROCCurve.get_interpolated_threshold()`.
+
 ## 0.3.0 
 
 **Breaking changes**:

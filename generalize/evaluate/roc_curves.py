@@ -554,7 +554,7 @@ class ROCCurve:
         )
         return {
             "Threshold": threshold,
-            "Specificity": interpolated_roc.fpr[1],
+            "Specificity": 1 - interpolated_roc.fpr[1],
             "Sensitivity": interpolated_roc.tpr[1],
         }
 

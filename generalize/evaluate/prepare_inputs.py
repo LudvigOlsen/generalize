@@ -121,7 +121,28 @@ def _shared_aggregate_predictions_by_group(
     targets: Optional[Union[list, np.ndarray]],
     numeric: Optional[Union[list, np.ndarray]] = None,
     groups: Optional[Union[list, np.ndarray]] = None,
+    validate_target_consistency: bool = False,
 ):
+    if validate_target_consistency:
+        target_counts = (
+            pd.DataFrame({"Target": targets, "Group": groups})
+            .groupby("Group")
+            .Target.nunique(dropna=False)
+        )
+        conflicting_groups = target_counts[target_counts > 1].index.tolist()
+        if conflicting_groups:
+            max_print = 10
+            shown_groups = ", ".join(
+                [str(group) for group in conflicting_groups[:max_print]]
+            )
+            if len(conflicting_groups) > max_print:
+                shown_groups += ", ..."
+            raise ValueError(
+                "Cannot aggregate predictions by group when a group has multiple "
+                "target values. Found conflicting target values for group(s): "
+                f"{shown_groups}."
+            )
+
     target_df = (
         pd.DataFrame({"Target": targets, "Group": groups})
         .groupby("Group")
@@ -179,7 +200,10 @@ def aggregate_classification_predictions_by_group(
         return targets, probabilities, predictions
 
     new_targets, new_probabilities = _shared_aggregate_predictions_by_group(
-        targets=targets, numeric=probabilities, groups=groups
+        targets=targets,
+        numeric=probabilities,
+        groups=groups,
+        validate_target_consistency=True,
     )
 
     new_predictions = None

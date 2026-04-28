@@ -611,9 +611,9 @@ class Evaluator:
                 "is an evaluation made with `evaluate()`."
             )
         else:
-            assert isinstance(
-                combined_evaluations, dict
-            ), "`combined_evaluations` must be a dict as created with `Evaluator.combine_evaluations()`."
+            assert isinstance(combined_evaluations, dict), (
+                "`combined_evaluations` must be a dict as created with `Evaluator.combine_evaluations()`."
+            )
         assert out_path is not None, "`out_path` must be specified."
 
         # Create out_path directory if necessary
@@ -667,8 +667,9 @@ class Evaluator:
                 # NOTE: We may have multiple threshold versions
                 # So we need to assign the counts in every row with a
                 # given repetition index
-                combined_evaluations["Scores"]["Num Warnings"][
-                    combined_evaluations["Scores"][eval_idx_colname] == rep_idx
+                combined_evaluations["Scores"].loc[
+                    combined_evaluations["Scores"][eval_idx_colname] == rep_idx,
+                    "Num Warnings",
                 ] = num_warns
 
         # Save 'results' data frames
@@ -758,7 +759,7 @@ class Evaluator:
 
     @staticmethod
     def save_predictions(
-        predictions_list: List[Union[np.ndarray, pd.DataFrame]] = None,
+        predictions_list: List[Union[np.ndarray, pd.DataFrame]],
         targets: Optional[Union[np.ndarray, list]] = None,
         targets_list: Optional[List[Union[np.ndarray, list]]] = None,
         groups: Optional[Union[np.ndarray, list]] = None,
@@ -767,7 +768,7 @@ class Evaluator:
         split_indices_list: Optional[List[np.ndarray]] = None,
         target_idx_to_target_label_map: Optional[Dict[int, str]] = None,
         positive_class: Optional[str] = None,
-        out_path: Union[pathlib.Path, str] = None,
+        out_path: Optional[Union[pathlib.Path, str]] = None,
         idx_names: Optional[List[str]] = None,
         idx_colname: str = "Repetition",
         identifier_cols_dict: Optional[Dict[str, Union[str, numbers.Number]]] = None,
@@ -811,6 +812,8 @@ class Evaluator:
             *after* repetitions are concatenated.
 
         """
+        if out_path is None:
+            raise ValueError("`out_path` must be specified.")
 
         all_predictions = Evaluator.combine_predictions(
             predictions_list=predictions_list,
@@ -859,7 +862,7 @@ class Evaluator:
 
     @staticmethod
     def combine_predictions(
-        predictions_list: List[Union[np.ndarray, pd.DataFrame]] = None,
+        predictions_list: List[Union[np.ndarray, pd.DataFrame]],
         targets: Optional[Union[np.ndarray, list]] = None,
         targets_list: Optional[List[Union[np.ndarray, list]]] = None,
         groups: Optional[Union[np.ndarray, list]] = None,
@@ -925,11 +928,13 @@ class Evaluator:
             )
 
         # Convert predictions to data frame
-        predictions_list = [pd.DataFrame(preds) for preds in predictions_list]
+        predictions_as_df_list: List[pd.DataFrame] = [
+            pd.DataFrame(preds) for preds in predictions_list
+        ]
 
         # Rename prediction column when it's a single column
-        if len(predictions_list[0].columns) == 1:
-            for preds_df in predictions_list:
+        if len(predictions_as_df_list[0].columns) == 1:
+            for preds_df in predictions_as_df_list:
                 if positive_class is not None:
                     preds_df.columns = [f"P({positive_class})"]
                 else:
@@ -939,47 +944,49 @@ class Evaluator:
                 "P(" + target_idx_to_target_label_map[idx_key] + ")"
                 for idx_key in sorted(target_idx_to_target_label_map.keys())
             ]
-            for preds_df in predictions_list:
+            for preds_df in predictions_as_df_list:
                 preds_df.columns = prob_columns
 
         # Add targets to each data frame
         if targets is not None:
-            for preds_df in predictions_list:
+            for preds_df in predictions_as_df_list:
                 preds_df["Target"] = targets
                 if target_idx_to_target_label_map is not None:
                     preds_df["Target Label"] = [
                         target_idx_to_target_label_map[t] for t in preds_df["Target"]
                     ]
         if targets_list is not None:
-            assert len(targets_list) == len(predictions_list)
-            for preds_df, tgts in zip(predictions_list, targets_list):
+            assert len(targets_list) == len(predictions_as_df_list)
+            for preds_df, tgts in zip(predictions_as_df_list, targets_list):
                 preds_df["Target"] = tgts
 
         if groups is not None:
-            for preds_df in predictions_list:
+            for preds_df in predictions_as_df_list:
                 preds_df["Group"] = groups
         if groups_list is not None:
-            assert len(groups_list) == len(predictions_list)
-            for preds_df, grps in zip(predictions_list, groups_list):
+            assert len(groups_list) == len(predictions_as_df_list)
+            for preds_df, grps in zip(predictions_as_df_list, groups_list):
                 preds_df["Group"] = grps
 
         if sample_ids is not None:
-            for preds_df in predictions_list:
+            for preds_df in predictions_as_df_list:
                 preds_df["Sample ID"] = sample_ids
 
         if split_indices_list is not None:
-            assert len(split_indices_list) == len(predictions_list), (
+            assert len(split_indices_list) == len(predictions_as_df_list), (
                 "When specified, `split_indices_list` must be a list with "
-                "the same length as `predictions_list`."
+                "the same length as `predictions_as_df_list`."
             )
-            for preds, splits in zip(predictions_list, split_indices_list):
+            for preds, splits in zip(predictions_as_df_list, split_indices_list):
                 preds["Split"] = splits
 
         # Add the prediction set index column to each data frame
-        add_reps_column(predictions_list, rep_names=idx_names, colname=idx_colname)
+        add_reps_column(
+            predictions_as_df_list, rep_names=idx_names, colname=idx_colname
+        )
 
         # Concatenate to a single data frame
-        all_predictions = pd.concat(predictions_list, axis=0, ignore_index=True)
+        all_predictions = pd.concat(predictions_as_df_list, axis=0, ignore_index=True)
 
         # Add the identifier columns
         add_identifier_columns(all_predictions, identifier_cols_dict)
@@ -991,7 +998,7 @@ class Evaluator:
         targets: Union[np.ndarray, list],
         predicted_probabilities: Union[np.ndarray, list],
         above_specificity: float = 0.95,
-        positive: int = None,
+        positive: Optional[int] = None,
         task: str = "binary_classification",
     ) -> dict:
         """
@@ -1019,6 +1026,8 @@ class Evaluator:
             raise NotImplementedError(
                 f"Only implemented for binary classification but `task` was: {task}"
             )
+        if positive is None:
+            raise ValueError("`positive` must be specified.")
         return BinaryEvaluator.get_threshold_at_specificity(
             targets=targets,
             predicted_probabilities=predicted_probabilities,
@@ -1030,7 +1039,7 @@ class Evaluator:
     def get_threshold_at_max_j(
         targets: Union[np.ndarray, list],
         predicted_probabilities: Union[np.ndarray, list],
-        positive: int = None,
+        positive: Optional[int] = None,
         task: str = "binary_classification",
     ) -> dict:
         """
@@ -1061,6 +1070,8 @@ class Evaluator:
             raise NotImplementedError(
                 f"Only implemented for binary classification but `task` was: {task}"
             )
+        if positive is None:
+            raise ValueError("`positive` must be specified.")
         return BinaryEvaluator.get_threshold_at_max_j(
             targets=targets,
             predicted_probabilities=predicted_probabilities,

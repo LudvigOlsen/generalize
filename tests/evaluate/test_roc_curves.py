@@ -281,6 +281,31 @@ def test_roc_curve_interpolated_metrics():
     
 
 
+def test_roc_curve_interpolated_threshold_specificity():
+    labels = np.array([0, 0, 1, 1])
+    preds = np.array([0.1, 0.4, 0.35, 0.8])
+
+    roc = ROCCurve.from_data(targets=labels, predicted_probabilities=preds)
+    threshold = 0.5
+
+    thresh_interp = roc.get_interpolated_threshold(threshold=threshold)
+
+    # The ROC points are:
+    #   threshold=1.8: FPR=0.0, TPR=0.0
+    #   threshold=0.8: FPR=0.0, TPR=0.5
+    #   threshold=0.4: FPR=0.5, TPR=0.5
+    #   threshold=0.35: FPR=0.5, TPR=1.0
+    #   threshold=0.1: FPR=1.0, TPR=1.0
+    #
+    # At threshold 0.5, linear interpolation between thresholds 0.4 and 0.8 gives:
+    #   TPR = 0.5 + ((0.5 - 0.4) / (0.8 - 0.4)) * (0.5 - 0.5) = 0.5
+    #   FPR = 0.5 + ((0.5 - 0.4) / (0.8 - 0.4)) * (0.0 - 0.5) = 0.375
+    #   Specificity = 1 - FPR = 0.625
+    np.testing.assert_allclose(thresh_interp["Threshold"], threshold)
+    np.testing.assert_allclose(thresh_interp["Sensitivity"], 0.5)
+    np.testing.assert_allclose(thresh_interp["Specificity"], 0.625)
+
+
 def test_roc_curve_interpolation():
     labels = np.array([0, 0, 0, 0, 1, 1, 1, 1])
     preds = np.array([0.3, 0.4, 0.7, 0.25, 0.8, 0.4, 0.7, 0.4])

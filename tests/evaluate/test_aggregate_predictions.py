@@ -1,3 +1,4 @@
+import pytest
 from numpy.testing import assert_array_almost_equal
 from generalize.evaluate.prepare_inputs import aggregate_classification_predictions_by_group
 
@@ -28,6 +29,15 @@ def test_aggregate_classification_predictions_by_group():
         new_predictions,
         [1,2,2,2,1,2,2,1],
     )
+
+
+def test_aggregate_classification_predictions_by_group_rejects_conflicting_targets():
+    with pytest.raises(ValueError, match="multiple target values"):
+        aggregate_classification_predictions_by_group(
+            targets=[0, 1, 1],
+            probabilities=[0.2, 0.8, 0.9],
+            groups=["subject_1", "subject_1", "subject_2"],
+        )
 
 
 # def test_aggregate_regression_predictions_by_group():
