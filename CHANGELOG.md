@@ -3,6 +3,8 @@
 ## 0.3.1
 
 - Fixes the interpolated sensitivity returned by `ROCCurve.get_interpolated_threshold()`.
+- Bumps `utipy` dependency to `1.1.0`.
+- Bumps `nattrs` dependency to `0.2.3`.
 
 ## 0.3.0 
 
