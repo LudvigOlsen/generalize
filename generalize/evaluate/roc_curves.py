@@ -773,6 +773,20 @@ class ROCCurves:
                 }
             }
         """
+        if any(
+            part.startswith("__") and part.endswith("__") for part in path.split(".")
+        ):
+            # For safety reasons, we don't allow specifying dunder attributes
+            raise ValueError(
+                "Path keys cannot be dunders (__key__). Got: {}",
+                ", ".join(
+                    [
+                        part
+                        for part in path.split(".")
+                        if part.startswith("__") and part.endswith("__")
+                    ]
+                ),
+            )
         if not replace and nested_hasattr(self._curves, path):
             raise ValueError(f"A `ROCCurve` already exists at path: {path}.")
         nested_setattr(obj=self._curves, attr=path, value=roc_curve, make_missing=True)

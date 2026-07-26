@@ -1,8 +1,19 @@
 import random
 import numpy as np
 import pandas as pd
+import pytest
 
 from generalize.evaluate.roc_curves import ROCCurves, ROCCurve
+
+
+def test_roc_curves_add_rejects_dunder_path_keys():
+    roc_coll = ROCCurves()
+
+    with pytest.raises(ValueError, match="Path keys cannot be dunders"):
+        roc_coll.add(path="valid.__dunder__.path", roc_curve=None)
+
+    assert roc_coll.paths == []
+    assert roc_coll._curves == {}
 
 
 def test_roc_curves_set_get():

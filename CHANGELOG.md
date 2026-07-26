@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0
+
+- `ROCCurves.add()` rejects `__*__` dunders in path keys. Thanks to Nils Eric Jordan for reporting.
+- Bumps `nattrs` dependency to `0.3.0`.
+
 ## 0.3.1
 
 - Fixes the interpolated sensitivity returned by `ROCCurve.get_interpolated_threshold()`.
