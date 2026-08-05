@@ -1,6 +1,6 @@
 [project]
 name = "generalize"
-version = "0.4.0"
+version = "0.4.1"
 description = "Machine learning tools for running repeated nested leave-one-dataset-out validation and more."
 authors = [{name = "Ludvig", email = "<mail@ludvigolsen.dk>"}]
 readme = "README.md"

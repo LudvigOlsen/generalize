@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1
+
+- Allows NaNs in indexed feature selector to allow downstream handling.
+
 ## 0.4.0
 
 - `ROCCurves.add()` rejects `__*__` dunders in path keys. Thanks to Nils Eric Jordan for reporting.
