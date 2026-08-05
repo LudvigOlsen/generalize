@@ -12,7 +12,12 @@ class BaseIndexSelector(BaseEstimator, SelectorMixin):
         self.feature_indices = feature_indices
 
     def fit(self, X, y=None):
-        X, y = check_X_y(X, y)
+        X, y = check_X_y(
+            X,
+            y,
+            # Can be NaN coming into the split and then handled per split
+            force_all_finite="allow-nan",
+        )
         self.total_num_features_ = X.shape[-1]
         return self
 
