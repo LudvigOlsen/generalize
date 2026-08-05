@@ -63,3 +63,15 @@ def test_index_feature_selectors_passes_check_estimator():
     # Check that the transformer passes standard estimator checks
     check_estimator(IndexFeatureSelector(feature_indices=[0]))
     check_estimator(IndexFeatureRemover(feature_indices=[0]))
+
+
+def test_index_feature_selectors_allow_nan():
+    """NaNs pass through selection for downstream branch-specific handling."""
+    x = np.array([[1.0, np.nan, 3.0], [4.0, 5.0, 6.0]])
+    y = np.array([0, 1])
+
+    selected = IndexFeatureSelector(feature_indices=[0, 1]).fit_transform(x, y)
+    removed = IndexFeatureRemover(feature_indices=[2]).fit_transform(x, y)
+
+    assert_array_almost_equal(selected, x[:, :2])
+    assert_array_almost_equal(removed, x[:, :2])

@@ -21,6 +21,16 @@ class BaseIndexSelector(BaseEstimator, SelectorMixin):
         self.total_num_features_ = X.shape[-1]
         return self
 
+    def _more_tags(self):
+        """Allow NaNs to pass through feature selection.
+
+        ``SelectorMixin.transform`` validates its input independently of
+        ``fit`` and uses this tag to decide whether NaNs are accepted. Feature
+        selection is not responsible for handling missing values: a selected
+        downstream branch may remove or otherwise process them.
+        """
+        return {"allow_nan": True}
+
 
 class IndexFeatureSelector(BaseIndexSelector):
     def _get_support_mask(self):

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.2
+
+- Allows NaNs in indexed feature selector to allow downstream handling (proper fix).
+
 ## 0.4.1
 
 - Allows NaNs in indexed feature selector to allow downstream handling.
